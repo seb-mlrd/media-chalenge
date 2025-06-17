@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '../../context/AuthContext';
-import LogoutButton from '@/components/logoutButton';
+import LogoutButton from '../components/logoutButton';
 
 export default function Home() {
   const { user, loading } = useAuth();
