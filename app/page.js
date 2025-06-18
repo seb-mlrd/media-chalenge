@@ -95,15 +95,75 @@
 // }
 
 
+
+
+// 'use client'
+// import Loader from '@/components/Loader'
+
+// export default function Home() {
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-900">
+//       <Loader />
+//     </div>
+//   )
+// }
+
+
+
+
 'use client'
+
+import { useState, useEffect } from 'react'
 import Loader from '@/components/Loader'
+import Link from 'next/link'
 
 export default function Home() {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 500) // loader 5s, tu peux ajuster
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-900">
+        <Loader />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-900">
-      <Loader />
-    </div>
+    <main className="p-6 space-y-4 bg-white dark:bg-zinc-900 text-black dark:text-white min-h-screen">
+      <h1 className="text-2xl font-bold">🏠 Accueil Media Challenge</h1>
+      <ul className="space-y-2 list-disc pl-5">
+        <li>
+          <Link href="/403" className="text-blue-600 hover:underline">
+            🔒 Accès refusé (403)
+          </Link>
+        </li>
+        <li>
+          <Link href="/toto" className="text-blue-600 hover:underline">
+            ❌ Page inexistante (404)
+          </Link>
+        </li>
+        <li>
+          <Link href="/test-error" className="text-blue-600 hover:underline">
+            💥 Page d’erreur (500)
+          </Link>
+        </li>
+      </ul>
+    </main>
   )
 }
+
+
+
+
+
+
 
 
