@@ -4,7 +4,7 @@ title: PreShot
 ---
 
 classDiagram
-    class User {
+    class Profil {
         +int id
         +String nickName
         +String email
@@ -37,10 +37,10 @@ classDiagram
         +String name
     }
 
-    User "1" --> "*" Article : favorites
+    Profil "1" --> "*" Article : favorites
     Article "1" --> "*" Media : has
     Media "*" --> "1" Article : belongsTo
     Article "*" --> "1" Theme : belongsTo
-    User "1" <-- "*" Article : createdBy
-    User "1" <-- "*" Article : updatedBy
+    Profil "1" <-- "*" Article : createdBy
+    Profil "1" <-- "*" Article : updatedBy
 ```
