@@ -5,7 +5,6 @@ import LogoutButton from "../components/LogoutButton";
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes'
 import { FaSun, FaMoon } from 'react-icons/fa'; 
-import './globals.css'
 export default function Home() {
     const { user, loading } = useAuth();
     const { theme, setTheme } = useTheme()
