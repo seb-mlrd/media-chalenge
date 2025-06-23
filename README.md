@@ -1,38 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PreShot - Plateforme de Média
 
-## Getting Started
+Application de gestion d'articles et de contenu média construite avec Next.js et Supabase.
 
-First, run the development server:
+## Fonctionnalités
+
+- Création d'articles avec titre et contenu
+- Catégorisation des articles par thèmes
+- Interface utilisateur moderne et responsive
+- Support du thème sombre
+- Gestion des thèmes (ajout, liste)
+
+## Prérequis
+
+- Node.js 14.x ou supérieur
+- Compte Supabase avec une base de données configurée
+- Variables d'environnement configurées
+
+## Installation
+
+1. Clonez le dépôt :
+
+```bash
+git clone <URL-du-depot>
+cd media-chalenge
+```
+
+2. Installez les dépendances :
+
+```bash
+npm install
+# ou
+yarn install
+```
+
+3. Configurez les variables d'environnement :
+
+Créez un fichier `.env.local` à la racine du projet avec les variables suivantes :
+
+```
+NEXT_PUBLIC_SUPABASE_URL=votre-url-supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=votre-cle-anonyme-supabase
+```
+
+4. Démarrez le serveur de développement :
 
 ```bash
 npm run dev
-# or
+# ou
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuration de la base de données
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Pour initialiser la base de données, vous devez exécuter manuellement le script SQL suivant dans l'éditeur SQL de votre projet Supabase :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sql
+-- Créer la table themes
+CREATE TABLE IF NOT EXISTS themes (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-## Learn More
+-- Insérer des thèmes par défaut
+INSERT INTO themes (name) VALUES 
+  ('Actualités'),
+  ('Sports'),
+  ('Technologie'),
+  ('Culture'),
+  ('Économie');
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Structure du projet
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/app/page.js` - Formulaire de création d'articles
+- `/app/articles/CreateArticle.js` - Service pour la création d'articles
+- `/app/themes/` - Gestion des thèmes
+- `/app/components/` - Composants réutilisables (Navbar, etc.)
+- `/app/lib/supabase.js` - Configuration du client Supabase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Modèle de données
 
-## Deploy on Vercel
+L'application utilise les tables suivantes dans Supabase :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **articles** - Stocke les articles
+   - `id` - Identifiant unique (clé primaire)
+   - `title` - Titre de l'article
+   - `content` - Contenu de l'article
+   - `theme_id` - Clé étrangère vers la table themes
+   - `created_by` - ID de l'utilisateur ayant créé l'article
+   - `updated_by` - ID de l'utilisateur ayant mis à jour l'article
+   - `created_at` - Date de création
+   - `updated_at` - Date de mise à jour
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# media-chalenge
-# media-chalenge
+2. **themes** - Stocke les catégories d'articles
+   - `id` - Identifiant unique (clé primaire)
+   - `name` - Nom du thème
+   - `created_at` - Date de création
+
+## Développement
+
+Pour ajouter de nouvelles fonctionnalités ou corriger des bugs, vous pouvez :
+
+1. Créer une branche pour votre fonctionnalité
+2. Développer et tester votre code
+3. Soumettre une pull request pour examen
+
+## Licence
+
+Ce projet est sous licence [MIT](LICENSE).
+
+## Remerciements
+
+- [Next.js](https://nextjs.org) - Framework React
+- [Supabase](https://supabase.io) - Backend as a Service
