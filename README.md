@@ -106,6 +106,14 @@ Pour ajouter de nouvelles fonctionnalités ou corriger des bugs, vous pouvez :
 2. Développer et tester votre code
 3. Soumettre une pull request pour examen
 
+## Dépendances
+
+- Ajouter le dark mode:
+  npm install next-themes
+- Ajouter tailwind et postcss:
+  npm install -D tailwindcss postcss autoprefixer
+  npm install -D @tailwindcss/postcss
+
 ## Licence
 
 Ce projet est sous licence [MIT](LICENSE).
