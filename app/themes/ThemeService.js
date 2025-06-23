@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 // Fonction pour récupérer tous les thèmes
 export async function getThemes() {

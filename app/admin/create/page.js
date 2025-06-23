@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import createArticle from '../../articles/CreateArticle';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { getThemes } from '../../themes/ThemeService';
 import styles from '../../page.module.css';
 
