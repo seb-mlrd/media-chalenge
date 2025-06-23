@@ -17,12 +17,16 @@ export const metadata = {
   description: "Application de gestion d'articles et de contenu média",
 };
 
+import { ThemeProvider } from 'next-themes';
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
