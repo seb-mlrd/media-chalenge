@@ -26,7 +26,7 @@ export default function LoginPage() {
         }
         console.log(data);
         setMessage('Connexion réussie !')
-        redirect('/home')
+        redirect('/')
     }
 
     return (

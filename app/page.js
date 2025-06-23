@@ -1,11 +1,30 @@
+'use client';
+
+import { useAuth } from '../context/AuthContext';
+import LogoutButton from "../components/LogoutButton";
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
-  return (
-    <div className="home-container">
-      <h1>Bienvenue sur PreShot</h1>
-      <p>Votre plateforme de gestion d'articles et de contenu média.</p>
-      <p>
-        Utilisez le menu de navigation pour accéder aux différentes sections de l'application.
-      </p>
-    </div>
-  );
+    const { user, loading } = useAuth();
+    const router = useRouter();
+    if (loading) return <p>Chargement...</p>;
+  
+    return (
+      <div>
+        <h1>Bienvenue {user && user.nickname}</h1>
+        {user?.is_admin && <p>Vous êtes administrateur 🎉</p>}
+        {user ?
+          <LogoutButton />
+        :
+        <div>
+          <button onClick={() => router.push('/register')} style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}>
+            Inscription
+          </button>
+          <button onClick={() => router.push('/login')} style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}>
+            Connexion
+          </button>
+        </div>
+      }
+      </div>
+    );
 }
