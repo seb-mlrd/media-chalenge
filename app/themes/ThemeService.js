@@ -19,22 +19,22 @@ export async function getThemes() {
   }
 }
 
-// // Fonction pour créer un nouveau thème
-// export async function createTheme(name) {
-//   try {
-//     const { data, error } = await supabase
-//       .from('themes')
-//       .insert([{ name }])
-//       .select();
+// Fonction pour créer un nouveau thème
+export async function createTheme(name) {
+  try {
+    const { data, error } = await supabase
+      .from('themes')
+      .insert([{ name }])
+      .select();
     
-//     if (error) {
-//       console.error('Erreur lors de la création du thème:', error.message);
-//       return { success: false, message: error.message };
-//     }
+    if (error) {
+      console.error('Erreur lors de la création du thème:', error.message);
+      return { success: false, message: error.message };
+    }
     
-//     return { success: true, theme: data[0] };
-//   } catch (err) {
-//     console.error('Exception lors de la création du thème:', err);
-//     return { success: false, message: err.message || 'Une erreur inconnue est survenue' };
-//   }
-// }
+    return { success: true, theme: data[0] };
+  } catch (err) {
+    console.error('Exception lors de la création du thème:', err);
+    return { success: false, message: err.message || 'Une erreur inconnue est survenue' };
+  }
+}

@@ -1,15 +1,15 @@
 'use client';
 
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit, FaUserEdit, FaLayerGroup} from 'react-icons/fa'; 
-export default function Admin() {
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
+export default function AllArticles() {
     const { user, loading } = useAuth();
-    const router = useRouter();
     const [allArticles, setAllArticles] = useState([]);
-    
+    const router = useRouter();
+
     useEffect(() => {
         if (!loading && user && !user.is_admin) {
             router.push('/');
@@ -36,19 +36,19 @@ export default function Admin() {
     if (loading || !user) {
         return <p className="text-center text-gray-600 mt-8">Chargement...</p>;
     }
-    
+
     return (
         <div className="min-h-screen flex bg-gray-50">
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r px-6 py-8 hidden md:block">
                 <div className="text-xl font-semibold text-gray-700 mb-10">Dashboard</div>
                 <nav className="space-y-4 text-gray-700">
-                    <a href="/admin" className="block hover:text-indigo-600 bg-gray-100 p-2">Dashboard</a>
-                    <a href="/admin/articles" className="block hover:text-indigo-600 p-2">Contenu</a>
+                    <a href="/admin" className="block hover:text-indigo-600 p-2">Dashboard</a>
+                    <a href="/admin/articles" className="block hover:text-indigo-600 p-2 bg-gray-100">Contenu</a>
                     <a href="/admin/user" className="block hover:text-indigo-600 p-2">Utilisateurs</a>
                 </nav>
             </aside>
-
+        
             {/* Main content */}
             <main className="flex-1 p-8">
                 {/* Header */}
@@ -64,22 +64,6 @@ export default function Admin() {
                         </div>
                         <div className="w-10 h-10 bg-gray-300 rounded-full" />
                     </div>
-                </div>
-
-                {/* Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left align-center hover:shadow inline" onClick={() => router.push('admin/create')}>
-                        <FaEdit className="inline w-10"/>
-                        Créer un article
-                    </button>
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow" onClick={() => router.push('admin/articles')}>
-                        <FaLayerGroup className="inline w-10"/>
-                        Voir tous les articles
-                    </button>
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow inline" onClick={() => router.push('admin/user')}>
-                        <FaUserEdit className="inline w-10" />
-                        Gérer les utilisateurs
-                    </button>
                 </div>
 
                 {/* Filtres */}

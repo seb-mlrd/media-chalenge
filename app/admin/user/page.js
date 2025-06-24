@@ -1,14 +1,15 @@
 'use client';
 
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit, FaUserEdit, FaLayerGroup} from 'react-icons/fa'; 
+import { FaTrash } from 'react-icons/fa';
+
 export default function Admin() {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const [allArticles, setAllArticles] = useState([]);
+    const [allProfils, setAllProfils] = useState([]);
     
     useEffect(() => {
         if (!loading && user && !user.is_admin) {
@@ -18,34 +19,50 @@ export default function Admin() {
 
     useEffect(() => {
 
-        const fetchArticles = async () => {
-            let { data: articles, error } = await supabase
-                .from('articles')
-                .select('*, articles_created_by_fkey(nickname)');
+        const fetchUsers = async () => {
+            let { data: profils, error } = await supabase
+                .from('profils')
+                .select('*');
 
             if (error) {
                 console.error('Erreur de récupération :', error);
             } else {
-                setAllArticles(articles);
+                setAllProfils(profils);
             }
         };
 
-        fetchArticles();
+        fetchUsers();
+        console.log(allProfils);
+        
     }, []);
 
     if (loading || !user) {
         return <p className="text-center text-gray-600 mt-8">Chargement...</p>;
     }
     
+    const deleteUser = async (id) => {
+        const { error } = await supabase
+            .from('profils')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Erreur lors de la suppression :', error);
+        } else {
+            console.log('Profil supprimé');
+            fetchUsers();
+        }
+    };
+
     return (
         <div className="min-h-screen flex bg-gray-50">
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r px-6 py-8 hidden md:block">
                 <div className="text-xl font-semibold text-gray-700 mb-10">Dashboard</div>
                 <nav className="space-y-4 text-gray-700">
-                    <a href="/admin" className="block hover:text-indigo-600 bg-gray-100 p-2">Dashboard</a>
+                    <a href="/admin" className="block hover:text-indigo-600 p-2">Dashboard</a>
                     <a href="/admin/articles" className="block hover:text-indigo-600 p-2">Contenu</a>
-                    <a href="/admin/user" className="block hover:text-indigo-600 p-2">Utilisateurs</a>
+                    <a href="/admin/user" className="block bg-gray-100 hover:text-indigo-600 p-2">Utilisateurs</a>
                 </nav>
             </aside>
 
@@ -66,36 +83,34 @@ export default function Admin() {
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left align-center hover:shadow inline" onClick={() => router.push('admin/create')}>
-                        <FaEdit className="inline w-10"/>
-                        Créer un article
-                    </button>
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow" onClick={() => router.push('admin/articles')}>
-                        <FaLayerGroup className="inline w-10"/>
-                        Voir tous les articles
-                    </button>
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow inline" onClick={() => router.push('admin/user')}>
-                        <FaUserEdit className="inline w-10" />
-                        Gérer les utilisateurs
-                    </button>
-                </div>
-
-                {/* Filtres */}
-                <div className="mb-4 flex gap-2">
-                    {["12 mois", "30 jours", "7 jours", "24 heures"].map((label) => (
-                        <button
-                            key={label}
-                            className="px-3 py-1 text-sm border rounded-md bg-white hover:bg-gray-100"
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Articles Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* User Table*/}
+                <table>
+                    <thead>
+                        <tr>
+                            <th className="text-gray-500">Pseudo</th>
+                            {/* <th className="text-gray-500">Email</th>
+                            <th className="text-gray-500">Dernière Connexion</th> */}
+                            <th className="text-gray-500">Rôle</th>
+                            <th className="text-gray-500">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {allProfils.map((profils) => (
+                            <tr key={profils.id}>
+                                <td className="text-gray-500">{profils.nickname}</td>
+                                {/* <td>{profils.users?.email}</td> */}
+                                {/* <td>{profils.lastConnexion}</td> */}
+                                <td className="text-gray-500">{profils.is_admin ? "Admin" : "User"}</td>
+                                {!profils.is_admin &&
+                                    <td>
+                                        <button onClick={() => deleteUser(profils.id)}><FaTrash className="text-red-500 w-5 h-5" /></button>
+                                    </td>
+                                }
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {allArticles.map((article) => (
                         <div key={article.id} className="bg-white border rounded-lg p-4 shadow-sm">
                             <div className="h-32 bg-gray-200 rounded mb-4" />
@@ -116,7 +131,7 @@ export default function Admin() {
                             </div>
                         </div>
                     ))}
-                </div>
+                </div> */}
             </main>
         </div>
     );
