@@ -127,42 +127,149 @@ export default function EditProfilePage() {
     setPassword('');
   };
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading)
+    return (
+      <p style={{ textAlign: 'center', marginTop: 50, fontSize: 18, color: '#555' }}>
+        Chargement...
+      </p>
+    );
 
   return (
-    <main style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h1>Modifier mon profil</h1>
+    <main
+      style={{
+        maxWidth: 450,
+        margin: '50px auto',
+        padding: 30,
+        borderRadius: 12,
+        boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+        backgroundColor: '#fff',
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        color: '#222',
+      }}
+    >
+      <h1
+        style={{
+          textAlign: 'center',
+          marginBottom: 30,
+          fontWeight: '700',
+          fontSize: '2rem',
+          color: '#000',
+        }}
+      >
+        Modifier mon profil
+      </h1>
       <form onSubmit={handleUpdate}>
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: '600', color: '#444' }}>
+          Email
+        </label>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ width: '100%', padding: 8, marginBottom: 10 }}
+          style={{
+            width: '100%',
+            padding: '12px 15px',
+            marginBottom: 20,
+            borderRadius: 8,
+            border: '1.5px solid #999',
+            fontSize: 16,
+            outline: 'none',
+            transition: 'border-color 0.3s',
+            backgroundColor: '#f9f9f9',
+            color: '#111',
+          }}
+          onFocus={(e) => (e.target.style.borderColor = '#444')}
+          onBlur={(e) => (e.target.style.borderColor = '#999')}
         />
+
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: '600', color: '#444' }}>
+          Nouveau mot de passe
+        </label>
         <input
           type="password"
-          placeholder="Nouveau mot de passe (laisser vide pour ne pas changer)"
+          placeholder="Laisser vide pour ne pas changer"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ width: '100%', padding: 8, marginBottom: 10 }}
           minLength={8}
           maxLength={20}
+          style={{
+            width: '100%',
+            padding: '12px 15px',
+            marginBottom: 20,
+            borderRadius: 8,
+            border: '1.5px solid #999',
+            fontSize: 16,
+            outline: 'none',
+            transition: 'border-color 0.3s',
+            backgroundColor: '#f9f9f9',
+            color: '#111',
+          }}
+          onFocus={(e) => (e.target.style.borderColor = '#444')}
+          onBlur={(e) => (e.target.style.borderColor = '#999')}
         />
+
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: '600', color: '#444' }}>
+          Pseudo
+        </label>
         <input
           type="text"
           placeholder="Pseudo"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           required
-          style={{ width: '100%', padding: 8, marginBottom: 10 }}
+          style={{
+            width: '100%',
+            padding: '12px 15px',
+            marginBottom: 25,
+            borderRadius: 8,
+            border: '1.5px solid #999',
+            fontSize: 16,
+            outline: 'none',
+            transition: 'border-color 0.3s',
+            backgroundColor: '#f9f9f9',
+            color: '#111',
+          }}
+          onFocus={(e) => (e.target.style.borderColor = '#444')}
+          onBlur={(e) => (e.target.style.borderColor = '#999')}
         />
-        <button type="submit" style={{ padding: 10, width: '100%', cursor: 'pointer' }}>
+
+        <button
+          type="submit"
+          style={{
+            width: '100%',
+            padding: 14,
+            backgroundColor: '#222',
+            color: '#fff',
+            fontWeight: '700',
+            fontSize: 18,
+            border: 'none',
+            borderRadius: 10,
+            cursor: 'pointer',
+            transition: 'background-color 0.3s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#000')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#222')}
+        >
           Mettre à jour
         </button>
       </form>
-      {message && <p style={{ marginTop: 10, whiteSpace: 'pre-line' }}>{message}</p>}
+
+      {message && (
+        <p
+          style={{
+            marginTop: 25,
+            color: message.startsWith('❌') ? '#b00020' : '#2e7d32',
+            whiteSpace: 'pre-line',
+            fontWeight: '600',
+            textAlign: 'center',
+            fontSize: 16,
+          }}
+        >
+          {message}
+        </p>
+      )}
     </main>
   );
 }

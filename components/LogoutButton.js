@@ -14,7 +14,7 @@ export default function LogoutButton() {
 
   return (
     <button onClick={handleLogout} style={{ padding: 10, marginTop: 20, cursor: 'pointer' }}>
-      🔓 Se déconnecter
+      Se déconnecter
     </button>
   );
 }
