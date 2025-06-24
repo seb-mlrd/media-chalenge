@@ -10,7 +10,7 @@ export default function Home() {
     const { theme, setTheme } = useTheme()
     const router = useRouter();
     if (loading) return <p>Chargement...</p>;
-
+    
     const handleThemeToggle = () => {
       setTheme(theme === 'light' ? 'dark' : 'light');
     };
