@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FaBars, FaBell, FaSearch, FaPlayCircle } from 'react-icons/fa'
 import Loader from '../components/Loader';
+import { useAuth } from '@/context/AuthContext'
 
 function highlightText(text, highlight) {
   if (!highlight) return text
@@ -22,59 +23,54 @@ function highlightText(text, highlight) {
 }
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
   const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [nickname, setNickname] = useState('')
-  const [loadingProfile, setLoadingProfile] = useState(true)
   const [articles, setArticles] = useState([])
   const [podcasts, setPodcasts] = useState([])
   const [themes, setThemes] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [showLoader, setShowLoader] = useState(false)
   const articlesRef = useRef(null)
+  const [ready, setReady] = useState(false); // pour contrôler l'affichage après redirection
 
   useEffect(() => {
-    const fetchData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (!session?.user) {
-        setShowLoader(true)
-        setTimeout(() => router.push('/login'), 500)
-        return
-      }
-
-      setUser(session.user)
-
-      const { data: profile } = await supabase
-        .from('profils')
-        .select('nickname')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (profile) {
-        setNickname(profile.nickname)
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
       } else {
-        setNickname('Utilisateur')
+        setReady(true); // l'utilisateur est présent, on peut afficher la page
       }
+    }
+  }, [user, loading, router]);
 
-      const { data: articlesData } = await supabase.from('articles').select('*')
-      const { data: podcastData } = await supabase.from('podcasts').select('*')
-      const { data: themeData } = await supabase.from('themes').select('*')
+  useEffect(() => {
+    if (!ready) return
 
-      setArticles(articlesData || [])
-      setPodcasts(podcastData || [])
-      setThemes(themeData || [])
-      setLoadingProfile(false)
+    const fetchData = async () => {
+      try {
+        const [articlesRes, podcastRes, themeRes] = await Promise.all([
+          supabase.from('articles').select('*'),
+          supabase.from('podcasts').select('*'),
+          supabase.from('themes').select('*')
+        ])
+
+        if (articlesRes.error) throw articlesRes.error
+        if (podcastRes.error) throw podcastRes.error
+        if (themeRes.error) throw themeRes.error
+
+        setArticles(articlesRes.data || [])
+        setPodcasts(podcastRes.data || [])
+        setThemes(themeRes.data || [])
+      } catch (err) {
+        console.error('Erreur fetch data :', err)
+      }
     }
 
     fetchData()
-  }, [router])
+  }, [ready])
 
-  if (showLoader) return <Loader />
-
-
+  if (loading || !ready) {
+    return <Loader />;
+  }
   const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (article.description && article.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -90,7 +86,7 @@ export default function HomePage() {
       </div>
 
       {/* Welcome */}
-      <h2 className="text-xl font-light">Hello, {nickname || ''}</h2>
+      <h2 className="text-xl font-light">Hello, {user.nickname}</h2>
 
       {/* Search Bar */}
       <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
@@ -216,51 +212,3 @@ export default function HomePage() {
     </div>
   )
 }
-
-
-
-
-
-
-
-// 'use client';
-
-// import { useAuth } from '../context/AuthContext';
-// import LogoutButton from "../components/LogoutButton";
-// import EditButton from "../components/EditButton"; 
-// import { useRouter } from 'next/navigation';
-
-// export default function Home() {
-//   const { user, loading } = useAuth();
-//   const router = useRouter();
-
-//   if (loading) return <p>Chargement...</p>;
-
-//   return (
-//     <div>
-//       <h1>Bienvenue {user && user.nickname}</h1>
-//       {user?.is_admin && <p>Vous êtes administrateur 🎉</p>}
-//       {user ? (
-//         <>
-//           <LogoutButton />
-//           <EditButton />
-//         </>
-//       ) : (
-//         <div>
-//           <button
-//             onClick={() => router.push('/register')}
-//             style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}
-//           >
-//             Inscription
-//           </button>
-//           <button
-//             onClick={() => router.push('/login')}
-//             style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}
-//           >
-//             Connexion
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
