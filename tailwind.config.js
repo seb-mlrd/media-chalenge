@@ -9,6 +9,7 @@
 
 
 // tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class', // ou 'media' si tu veux détecter le thème système
   content: [

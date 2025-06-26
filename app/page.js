@@ -3,8 +3,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FaBars, FaBell, FaSearch, FaPlayCircle } from 'react-icons/fa'
-import Loader from '../components/Loader';
+import { FaBell, FaSearch, FaPlayCircle, FaTimes } from 'react-icons/fa'
+import { FiArrowRight } from 'react-icons/fi'
+
+import Loader from '../components/Loader'
+import NavBar from '../components/NavBar'
+import { useAuth } from '@/context/AuthContext'
 
 function highlightText(text, highlight) {
   if (!highlight) return text
@@ -23,100 +27,174 @@ function highlightText(text, highlight) {
 
 export default function HomePage() {
   const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [nickname, setNickname] = useState('')
+  const { user, loading } = useAuth()
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [articles, setArticles] = useState([])
   const [podcasts, setPodcasts] = useState([])
   const [themes, setThemes] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [showLoader, setShowLoader] = useState(false)
+  const [selectedTheme, setSelectedTheme] = useState(null)
+  const [searchOverlay, setSearchOverlay] = useState(false)
+  const [users, setUsers] = useState([])
+
   const articlesRef = useRef(null)
 
+  const getThemeName = (id) => {
+    const theme = themes.find((t) => t.id === id)
+    return theme ? theme.name : 'Thème inconnu'
+  }
+
+  const getNickname = (id) => {
+    const userProfile = users.find((u) => u.id === id)
+    return userProfile ? userProfile.nickname : 'Inconnu'
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [loading, user, router])
 
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (!session?.user) {
-        setShowLoader(true)
-        setTimeout(() => router.push('/login'), 500)
-        return
-      }
-
-      setUser(session.user)
-
-      const { data: profile } = await supabase
-        .from('profils')
-        .select('nickname')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (profile) {
-        setNickname(profile.nickname)
-      } else {
-        setNickname('Utilisateur')
-      }
-
+  useEffect(() => {
+    const fetchContent = async () => {
       const { data: articlesData } = await supabase.from('articles').select('*')
       const { data: podcastData } = await supabase.from('podcasts').select('*')
       const { data: themeData } = await supabase.from('themes').select('*')
+      const { data: usersData } = await supabase.from('profils').select('id, nickname')
 
       setArticles(articlesData || [])
       setPodcasts(podcastData || [])
       setThemes(themeData || [])
+      setUsers(usersData || [])
+
       setLoadingProfile(false)
     }
 
-    fetchData()
-  }, [router])
+    if (user) {
+      fetchContent()
+    }
+  }, [user])
 
-  if (showLoader) return <Loader />
-
+  if (loading || loadingProfile) return <Loader />
 
   const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (article.description && article.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    (article.content && article.content.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  const themeFilteredArticles = selectedTheme
+    ? filteredArticles.filter((article) => article.theme_id === selectedTheme)
+    : filteredArticles
+
+  const nickname = user?.nickname || 'Utilisateur'
+
   return (
-    <div className="p-4 space-y-6">
-      {/* Top Bar */}
+    <div className="p-4 space-y-6 relative">
+      {/* TOP BAR */}
       <div className="flex justify-between items-center">
-        <FaBars className="text-xl" />
-        <h1 className="text-lg font-semibold">Home</h1>
-        <FaBell className="text-xl" />
+        <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
+        <div className="flex items-center space-x-4">
+          <FaBell className="text-xl" />
+          <FaSearch className="text-xl cursor-pointer" onClick={() => setSearchOverlay(true)} />
+        </div>
       </div>
 
-      {/* Welcome */}
-      <h2 className="text-xl font-light">Hello, {nickname || ''}</h2>
+      {/* WELCOME */}
+      <h2 className="text-xl font-bold">Bonjour, {nickname}</h2>
+      <h2 className="text-xl font-light">Voici ce qu’on a déniché pour toi aujourd’hui.</h2>
 
-      {/* Search Bar */}
-      <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-        <FaSearch className="text-gray-500 mr-2" />
-        <input
-          className="bg-transparent outline-none w-full text-sm"
-          placeholder="Recherche"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+      {/* SEARCH OVERLAY */}
+      {searchOverlay && (
+        <div className="fixed top-0 left-0 w-full h-full bg-white z-50 p-6 overflow-y-auto">
+          <div className="flex items-center mb-6">
+            <FaSearch className="text-gray-500 mr-2" />
+            <input
+              autoFocus
+              className="flex-grow text-lg outline-none border-b border-gray-300 pb-1"
+              placeholder="Rechercher des articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <FaTimes
+              className="ml-3 text-xl text-gray-600 cursor-pointer"
+              onClick={() => {
+                setSearchTerm('')
+                setSearchOverlay(false)
+              }}
+            />
+          </div>
 
-      {/* Themes */}
+          <div className="space-y-4">
+            {themeFilteredArticles.length > 0 ? (
+              themeFilteredArticles.map((article) => (
+                <div
+                  key={article.id}
+                  className="flex items-center w-full bg-gray-100 p-4 rounded-lg shadow"
+                >
+                  <img
+                    src={article.image_url || '/default-image.jpg'}
+                    alt={article.title}
+                    className="w-24 h-16 object-cover rounded-md flex-shrink-0"
+                  />
+                  <div className="flex flex-col ml-4 flex-grow">
+                    <h4 className="font-semibold text-lg">
+                      {highlightText(article.title, searchTerm)}
+                    </h4>
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                      {highlightText(article.content || '', searchTerm)}
+                    </p>
+                  </div>
+                  <button className="ml-4 text-blue-600 hover:text-blue-800 font-bold text-2xl">
+                    <FiArrowRight />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center">Aucun article trouvé.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* THEMES */}
       <div className="flex justify-between items-center">
-        <span className="font-medium">Thèmes</span>
-        <a href="#" className="text-blue-500 text-sm">View all</a>
+        <span className="font-medium">Tes sujets du moment</span>
+        {/* <button
+          className="text-sm font-medium text-[#9992FF]"
+          onClick={() => setSelectedTheme(null)}
+        >
+          Voir tout
+        </button> */}
       </div>
       <div className="flex justify-center space-x-4 overflow-x-auto pb-2 max-w-full mx-auto">
         {themes.length > 0
           ? themes.map((theme) => (
               <div
                 key={theme.id}
-                className="flex flex-col items-center space-y-1 min-w-[56px]"
+                className="flex flex-col items-center space-y-1 min-w-[56px] cursor-pointer"
+                // onClick={() => setSelectedTheme(theme.id)}
+
+                onClick={() => router.push(`/themes/${theme.id}`)}
+
               >
-                <div className="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-gray-700">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor:
+                      selectedTheme === null
+                        ? theme.color || '#9992FF'
+                        : selectedTheme === theme.id
+                        ? theme.color || '#9992FF'
+                        : '#E0E0E0',
+                  }}
+                >
+                  <span
+                    className={`text-sm font-semibold ${
+                      selectedTheme !== null && selectedTheme !== theme.id
+                        ? 'text-gray-400'
+                        : 'text-white'
+                    }`}
+                  >
                     {theme.name ? theme.name[0].toUpperCase() : '?'}
                   </span>
                 </div>
@@ -130,75 +208,45 @@ export default function HomePage() {
             ))}
       </div>
 
-      {/* Articles */}
-      <h3 className="font-medium text-center mb-4">Articles</h3>
-
-      {searchTerm.trim() === '' ? (
-        <div
-          ref={articlesRef}
-          className="relative w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          style={{
-            paddingLeft: 'calc(50vw - 150px)',
-            paddingRight: 'calc(50vw - 150px)',
-            scrollPaddingLeft: 'calc(50vw - 150px)',
-            scrollPaddingRight: 'calc(50vw - 150px)',
-          }}
-        >
-          <div className="flex space-x-4">
-            {articles.map((article) => (
-              <div
-                key={article.id}
-                className="snap-center flex-shrink-0 w-[300px] bg-gray-100 p-4 rounded-xl shadow-lg flex flex-col justify-between"
-                style={{ minHeight: '250px' }}
-              >
-                <div className="flex-grow" />
-                <div className="flex flex-col">
-                  <h4 className="font-semibold">{article.title}</h4>
-                  <div className="flex justify-between items-start mt-1">
-                    <p className="text-sm text-gray-600 flex-1 pr-2">{article.description}</p>
-                    <button className="text-blue-500 text-sm font-medium whitespace-nowrap">
-                      Lire
-                    </button>
-                  </div>
+      {/* ARTICLES */}
+      <h3 className="font-medium  mb-4">À lire sans scroller des heures</h3>
+      <div
+        ref={articlesRef}
+        className="relative w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        style={{
+          paddingLeft: 'calc(50vw - 150px)',
+          paddingRight: 'calc(50vw - 150px)',
+          scrollPaddingLeft: 'calc(50vw - 150px)',
+          scrollPaddingRight: 'calc(50vw - 150px)',
+        }}
+      >
+        <div className="flex space-x-4">
+          {themeFilteredArticles.map((article) => (
+            <div
+              key={article.id}
+              className="snap-center flex-shrink-0 w-[300px] bg-gray-100 p-4 rounded-xl shadow-lg flex flex-col justify-between"
+              style={{ minHeight: '350px' }}
+            >
+              <div className="flex-grow" />
+              <div className="flex flex-col">
+                <h4 className="font-semibold">{article.title}</h4>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{article.content}</p>
+                <div className="mt-2 text-xs text-gray-500 space-y-1">  
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col space-y-4">
-          {filteredArticles.length > 0 ? (
-            filteredArticles.map(article => (
-              <div
-                key={article.id}
-                className="flex items-center w-full bg-gray-100 p-4 rounded-lg shadow"
-              >
-                <img
-                  src={article.image_url || '/default-image.jpg'}
-                  alt={article.title}
-                  className="w-24 h-16 object-cover rounded-md flex-shrink-0"
-                />
-                <div className="flex flex-col ml-4 flex-grow">
-                  <h4 className="font-semibold text-lg">
-                    {highlightText(article.title, searchTerm)}
-                  </h4>
-                  <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                    {highlightText(article.description || '', searchTerm)}
-                  </p>
-                </div>
-                <button className="ml-4 text-blue-600 hover:text-blue-800 font-bold text-2xl">
-                  &gt;
+                <button
+                  className="mt-4 self-end text-blue-600 hover:underline"
+                  onClick={() => router.push(`/articles/${article.id}`)}
+                >
+                  Lire
                 </button>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">Aucun article trouvé.</p>
-          )}
+                </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* Podcasts */}
-      <h3 className="font-medium">Podcasts</h3>
+      {/* PODCASTS */}
+      <h3 className="font-medium">À écouter entre deux réunions</h3>
       <div className="space-y-3">
         {podcasts.map((podcast) => (
           <div
@@ -213,6 +261,8 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+
+      <NavBar />
     </div>
   )
 }
@@ -222,45 +272,3 @@ export default function HomePage() {
 
 
 
-
-// 'use client';
-
-// import { useAuth } from '../context/AuthContext';
-// import LogoutButton from "../components/LogoutButton";
-// import EditButton from "../components/EditButton"; 
-// import { useRouter } from 'next/navigation';
-
-// export default function Home() {
-//   const { user, loading } = useAuth();
-//   const router = useRouter();
-
-//   if (loading) return <p>Chargement...</p>;
-
-//   return (
-//     <div>
-//       <h1>Bienvenue {user && user.nickname}</h1>
-//       {user?.is_admin && <p>Vous êtes administrateur 🎉</p>}
-//       {user ? (
-//         <>
-//           <LogoutButton />
-//           <EditButton />
-//         </>
-//       ) : (
-//         <div>
-//           <button
-//             onClick={() => router.push('/register')}
-//             style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}
-//           >
-//             Inscription
-//           </button>
-//           <button
-//             onClick={() => router.push('/login')}
-//             style={{ padding: 10, marginInline: 20, marginTop: 20, cursor: 'pointer' }}
-//           >
-//             Connexion
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }

@@ -116,7 +116,8 @@ export default function RegisterPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 30 }}>
         <FaArrowLeft onClick={() => router.back()} style={{ marginRight: 10, cursor: 'pointer', color: '#000' }} />
-        <h1 style={{ textAlign: 'center', flex: 1, fontSize: 24 }}>Inscription</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 'bold', color: '#5C19F5', flex: 1, textAlign: 'center' }}>Inscription</h1>
+
       </div>
 
       {/* Formulaire */}
@@ -168,10 +169,10 @@ export default function RegisterPage() {
           style={{
             padding: 12,
             marginTop: 20,
-            background: '#000',
+            background: '#5C19F5',
             color: '#fff',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 48,
             cursor: 'pointer',
           }}
         >
@@ -200,33 +201,12 @@ export default function RegisterPage() {
               background: '#000',
               color: '#fff',
               border: 'none',
-              borderRadius: 8,
+              borderRadius: 48,
               cursor: 'pointer',
             }}
           >
             <FaApple />
             Continuer avec Apple
-          </button>
-
-          <button
-            type="button"
-            onClick={() => console.log("Connexion avec Facebook")}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              padding: 10,
-              background: '#4267B2',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
-          >
-            <FaFacebookF />
-            Continuer avec Facebook
           </button>
 
           <button
@@ -239,15 +219,37 @@ export default function RegisterPage() {
               justifyContent: 'center',
               gap: 10,
               padding: 10,
-              background: '#fff',
+              background: '#F4F6F7',
               color: '#000',
               border: '1px solid #ccc',
-              borderRadius: 8,
+              borderRadius: 48,
               cursor: 'pointer',
             }}
           >
             <FaGoogle />
             Continuer avec Google
+          </button>
+
+
+          <button
+            type="button"
+            onClick={() => console.log("Connexion avec Facebook")}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              padding: 10,
+              background: '#9992FF',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 48,
+              cursor: 'pointer',
+            }}
+          >
+            <FaFacebookF />
+            Continuer avec Facebook
           </button>
         </div>
 
