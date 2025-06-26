@@ -27,7 +27,7 @@ export default function LoginPage() {
     }
 
     setMessage('Connexion réussie !');
-    router.push('/profile');
+    router.push('/');
   };
 
   return (

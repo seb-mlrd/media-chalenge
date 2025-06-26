@@ -1,14 +1,33 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService } from "@/services/articlesService";
 
 export default function AllArticles() {
     const { user, loading } = useAuth();
     const [allArticles, setAllArticles] = useState([]);
     const router = useRouter();
+    const [themes, setThemes] = useState([]);
+    const [selectedTheme, setSelectedTheme] = useState('');
+
+    const fetchThemes = async () => {
+        const { data, error } = await fetchThemesService();
+        if (error) {
+            console.error('Erreur lors du chargement des thèmes:', error);
+        } else {
+            setThemes(data);
+        }
+    };
+    const fetchArticles = async () => {
+        let { data: articles, error } = await fetchArticlesService()
+        if (error) {
+            console.error('Erreur de récupération :', error);
+        } else {
+            setAllArticles(articles);
+        }
+    };
 
     useEffect(() => {
         if (!loading && user && !user.is_admin) {
@@ -18,24 +37,72 @@ export default function AllArticles() {
 
     useEffect(() => {
 
-        const fetchArticles = async () => {
-            let { data: articles, error } = await supabase
-                .from('articles')
-                .select('*, articles_created_by_fkey(nickname)');
-
-            if (error) {
-                console.error('Erreur de récupération :', error);
-            } else {
-                setAllArticles(articles);
-            }
-        };
-
+        fetchThemes();
         fetchArticles();
     }, []);
 
     if (loading || !user) {
         return <p className="text-center text-gray-600 mt-8">Chargement...</p>;
     }
+
+    const fetchArticlesLastDay = async () => {
+        const dateLimite = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: articles, error } = await fetchArticlesSinceService(dateLimite)
+        if (error) {
+            console.error('Erreur de récupération :', error);
+        } else {
+            setAllArticles(articles);
+        }
+    };
+
+    const fetchArticlesLastSevenDays = async () => {
+        const dateLimite = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: articles, error } = await fetchArticlesSinceService(dateLimite)
+        if (error) {
+            console.error('Erreur de récupération :', error);
+        } else {
+            setAllArticles(articles);
+        }
+    };
+
+    const fetchArticlesLastThirtyDays = async () => {
+        const dateLimite = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: articles, error } = await fetchArticlesSinceService(dateLimite)
+        if (error) {
+            console.error('Erreur de récupération :', error);
+        } else {
+            setAllArticles(articles);
+        }
+    };
+
+    const fetchArticlesLastYears = async () => {
+        const dateLimite = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: articles, error } = await fetchArticlesSinceService(dateLimite)
+        if (error) {
+            console.error('Erreur de récupération :', error);
+        } else {
+            setAllArticles(articles);
+        }
+    };
+
+    const handleSelectChange = async (e) => {
+        const theme = e.target.value;
+        setSelectedTheme(theme);
+        if(theme){
+            const { data: articles, error } = await fetchArticlesByThemeService(theme)
+            if (error) {
+                console.error('Erreur de récupération :', error);
+            } else {
+                setAllArticles(articles);
+            }
+        }else{
+            await fetchArticles();
+        }
+    };
 
     return (
         <div className="min-h-screen flex bg-gray-50">
@@ -68,14 +135,23 @@ export default function AllArticles() {
 
                 {/* Filtres */}
                 <div className="mb-4 flex gap-2">
-                    {["12 mois", "30 jours", "7 jours", "24 heures"].map((label) => (
-                        <button
-                            key={label}
-                            className="px-3 py-1 text-sm border rounded-md bg-white hover:bg-gray-100"
-                        >
-                            {label}
-                        </button>
-                    ))}
+                    <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticles()}>Tout</button>
+                    <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastYears()}>12 mois</button>
+                    <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastThirtyDays()}>30 jours</button>
+                    <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastSevenDays()}>7 jours</button>
+                    <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastDay()}>24 heures</button>
+                    <select
+                        className="border rounded-md p-2 bg-white text-gray-500 text-sm w-auto"
+                        value={selectedTheme}
+                        onChange={handleSelectChange}
+                    >
+                        <option value="">-- Choisir un thème --</option>
+                        {themes.map((theme) => (
+                        <option key={theme.id} value={theme.id}>
+                            {theme.name}
+                        </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Articles Grid */}
@@ -91,9 +167,11 @@ export default function AllArticles() {
                                 minute: "2-digit"
                             })}</p>
                             <h3 className="text-lg font-semibold mb-1 text-gray-700">{article.title}</h3>
-                            <p className="text-gray-500 text-sm mb-3">{article.content}</p>
+                             <p className="text-gray-500 text-sm mb-3">
+                                {article.content.length > 200 ? article.content.slice(0, 200) + "..." : article.content}
+                            </p>
                             <div className="flex justify-between items-center">
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{article.theme}</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">{article.themes?.name}</span>
                                 <button className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700" onClick={() => router.push(`edit/${article.id}`)}>
                                     Voir
                                 </button>

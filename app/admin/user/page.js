@@ -56,7 +56,6 @@ export default function Admin() {
 
     return (
         <div className="min-h-screen flex bg-gray-50">
-            {/* Sidebar */}
             <aside className="w-64 bg-white border-r px-6 py-8 hidden md:block">
                 <div className="text-xl font-semibold text-gray-700 mb-10">Dashboard</div>
                 <nav className="space-y-4 text-gray-700">
@@ -65,10 +64,7 @@ export default function Admin() {
                     <a href="/admin/user" className="block bg-gray-100 hover:text-indigo-600 p-2">Utilisateurs</a>
                 </nav>
             </aside>
-
-            {/* Main content */}
             <main className="flex-1 p-8">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-2xl text-gray-700 font-bold">Bienvenue, {user.nickname}</h1>
@@ -84,54 +80,34 @@ export default function Admin() {
                 </div>
 
                 {/* User Table*/}
-                <table>
-                    <thead>
-                        <tr>
-                            <th className="text-gray-500">Pseudo</th>
-                            {/* <th className="text-gray-500">Email</th>
-                            <th className="text-gray-500">Dernière Connexion</th> */}
-                            <th className="text-gray-500">Rôle</th>
-                            <th className="text-gray-500">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {allProfils.map((profils) => (
-                            <tr key={profils.id}>
-                                <td className="text-gray-500">{profils.nickname}</td>
-                                {/* <td>{profils.users?.email}</td> */}
-                                {/* <td>{profils.lastConnexion}</td> */}
-                                <td className="text-gray-500">{profils.is_admin ? "Admin" : "User"}</td>
-                                {!profils.is_admin &&
-                                    <td>
-                                        <button onClick={() => deleteUser(profils.id)}><FaTrash className="text-red-500 w-5 h-5" /></button>
-                                    </td>
-                                }
+                <div className="overflow-x-auto bg-white rounded-lg shadow-md p-6">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pseudo</th>
+                                {/* <th className="text-gray-500">Email</th>
+                                <th className="text-gray-500">Dernière Connexion</th> */}
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {allArticles.map((article) => (
-                        <div key={article.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                            <div className="h-32 bg-gray-200 rounded mb-4" />
-                            <p className="text-indigo-600 text-sm font-medium mb-1">{article.articles_created_by_fkey?.nickname ?? 'Auteur inconnu'} • {new Date(article.created_at).toLocaleString("fr-FR", {
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            })}</p>
-                            <h3 className="text-lg font-semibold mb-1 text-gray-700">{article.title}</h3>
-                            <p className="text-gray-500 text-sm mb-3">{article.content}</p>
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{article.theme}</span>
-                                <button className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700" onClick={() => router.push(`edit/${article.id}`)}>
-                                    Voir
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div> */}
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {allProfils.map((profils) => (
+                                <tr key={profils.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{profils.nickname}</td>
+                                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{profils.users?.email}</td> */}
+                                    {/* <td>{profils.lastConnexion}</td> */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{profils.is_admin ? "Admin" : "User"}</td>
+                                    {!profils.is_admin &&
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button onClick={() => deleteUser(profils.id)}><FaTrash className="text-red-500 w-5 h-5" /></button>
+                                        </td>
+                                    }
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </main>
         </div>
     );

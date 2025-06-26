@@ -113,6 +113,8 @@ Pour ajouter de nouvelles fonctionnalités ou corriger des bugs, vous pouvez :
 - Ajouter tailwind et postcss:
   npm install -D tailwindcss postcss autoprefixer
   npm install -D @tailwindcss/postcss
+- Ajouter headlessui
+  npm install @headlessui/react
 
 ## Licence
 
