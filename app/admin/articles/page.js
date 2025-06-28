@@ -129,7 +129,7 @@ export default function AllArticles() {
                             <p className="font-medium text-gray-700">{user.nickname}</p>
                             <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
-                        <div className="w-10 h-10 bg-gray-300 rounded-full" />
+                        <img src={`https://stmouhqxlajaofnzgeup.supabase.co/storage/v1/object/public/media/${user.avatar}`} alt="Avatar Preview" className="object-cover w-10 h-10 rounded-full" />
                     </div>
                 </div>
 
