@@ -28,7 +28,6 @@ function highlightText(text, highlight) {
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter()
-  const { user, loading } = useAuth()
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [articles, setArticles] = useState([])
   const [podcasts, setPodcasts] = useState([])
