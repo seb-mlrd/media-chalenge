@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
       const { data: profile, error } = await supabase
         .from('profils')
-        .select('nickname, is_admin, id')
+        .select('nickname, is_admin, id, avatar_url')
         .eq('user_id', userId)
         .single();
 
@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
           token: session.access_token,
           nickname: profile.nickname,
           is_admin: profile.is_admin,
+          avatar: profile.avatar_url
         });
       }
     } else {

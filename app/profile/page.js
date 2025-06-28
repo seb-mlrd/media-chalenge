@@ -20,7 +20,6 @@ export default function ProfilePage() {
   const toggleDarkMode = () => {
     setTheme(darkMode ? 'light' : 'dark');
   };
-
   const [notifications, setNotifications] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -79,7 +78,7 @@ export default function ProfilePage() {
       if (updateError) throw updateError;
 
       const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
-      setAvatarUrl(publicUrlData.publicUrl);
+      setAvatarUrl(publicUrlData.publicUrl);      
     } catch (error) {
       alert('Erreur lors de l’upload : ' + error.message);
     } finally {
