@@ -1,33 +1,40 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { FaHome, FaUser } from 'react-icons/fa'
+import { FaHome, FaUser, FaRegHeart } from 'react-icons/fa'
 
 export default function NavBar() {
   const router = useRouter()
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center h-14 z-50">
+    <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50">
       <button
         onClick={() => router.push('/')}
-        className={`flex flex-col items-center text-xs ${
+        className={`${
           pathname === '/' ? 'text-[#9992FF]' : 'text-gray-600'
         }`}
       >
-        <FaHome className="text-xl mb-1" />
-        Accueil
+        <FaHome className="text-2xl" />
       </button>
+
+      <button
+        onClick={() => router.push('/favorites')}
+        className={`${
+          pathname === '/favorites' ? 'text-[#9992FF]' : 'text-gray-600'
+        }`}
+      >
+        <FaRegHeart className="text-2xl" />
+      </button>
+
       <button
         onClick={() => router.push('/profile')}
-        className={`flex flex-col items-center text-xs ${
+        className={`${
           pathname === '/profile' ? 'text-[#9992FF]' : 'text-gray-600'
         }`}
       >
-        <FaUser className="text-xl mb-1" />
-        Profil
+        <FaUser className="text-2xl" />
       </button>
     </nav>
   )
 }
-

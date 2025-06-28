@@ -111,6 +111,8 @@ export default function RegisterPage() {
         padding: 20,
         fontFamily: 'sans-serif',
         color: '#000',
+        paddingTop: 130,
+
       }}
     >
       {/* Header */}
@@ -124,7 +126,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <input
           type="text"
-          placeholder="Pseudo"
+          placeholder="Nom complet"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           required
@@ -182,7 +184,7 @@ export default function RegisterPage() {
         {/* Ligne de séparation */}
         <div className="flex items-center justify-center my-4 text-gray-400 text-sm">
           <span className="border-t border-gray-300 flex-grow mr-2" />
-          OU CONTINUER AVEC
+          OU 
           <span className="border-t border-gray-300 flex-grow ml-2" />
         </div>
 

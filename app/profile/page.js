@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Switch } from '@headlessui/react';
 import { FiLogOut, FiMoon, FiBell, FiBookmark, FiUser, FiTrash2} from 'react-icons/fi';
+import { FaRegHeart } from 'react-icons/fa'
+
 import { useTheme } from 'next-themes';
 import NavBar from '../../components/NavBar';
 import Loader from '../../components/Loader'; 
@@ -51,41 +53,6 @@ export default function ProfilePage() {
 
     loadAvatar();
   }, [user]);
-
-  // Upload avatar
-  async function uploadAvatar(event) {
-    try {
-      setUploading(true);
-
-      const file = event.target.files[0];
-      if (!file) return setUploading(false);
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from('media')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { error: updateError } = await supabase
-        .from('profils')
-        .update({ avatar_url: filePath })
-        .eq('user_id', user.id);
-
-      if (updateError) throw updateError;
-
-      const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
-      setAvatarUrl(publicUrlData.publicUrl);
-    } catch (error) {
-      alert('Erreur lors de l’upload : ' + error.message);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   async function handleDeleteAccount() {
     const confirmed = window.confirm('⚠️ Supprimer définitivement votre compte ?');
@@ -166,13 +133,14 @@ export default function ProfilePage() {
       </div>
 
       {/* Collections */}
-      <p className="text-xs uppercase text-gray-500 tracking-wider px-6 pt-6 pb-2">
+      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4">
         Collection
       </p>
+
       <div className="bg-gray-50 dark:bg-gray-800 py-4 px-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
-            <FiBookmark />
+            <FaRegHeart />
             <span>Articles sauvegardés</span>
           </div>
           <span className="text-gray-400">{'>'}</span>
@@ -180,7 +148,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Préférences */}
-      <p className="text-xs uppercase text-gray-500 tracking-wider px-6 pt-6 pb-2">
+      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4">
         Préférences
       </p>
       <div className="bg-white dark:bg-gray-800 px-6 py-4 space-y-4">

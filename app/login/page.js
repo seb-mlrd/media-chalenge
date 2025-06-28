@@ -32,7 +32,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', }}>
       <div style={{ width: '100%', maxWidth: 400, padding: 30 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 40 }}>
             
