@@ -6,22 +6,19 @@ import EditButton from "@/components/EditButton";
 import { useRouter } from 'next/navigation';
 import { FaApple, FaFacebookF, FaGoogle, FaTwitter } from 'react-icons/fa';
 import Loader from '@/components/Loader'
+import { useEffect } from 'react';
 
 // import { signInWithProvider } from '../lib/authHelpers';
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter()
-  const [loadingProfile, setLoadingProfile] = useState(true)
-  const [articles, setArticles] = useState([])
-  const [podcasts, setPodcasts] = useState([])
-  const [themes, setThemes] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTheme, setSelectedTheme] = useState(null)
-  const [searchOverlay, setSearchOverlay] = useState(false)
-  const [users, setUsers] = useState([])
 
   if (loading) return <Loader />;
+
+  if (user) {
+    router.push('/home');
+  }  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
