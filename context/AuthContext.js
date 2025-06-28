@@ -17,13 +17,14 @@ export const AuthProvider = ({ children }) => {
 
       const { data: profile, error } = await supabase
         .from('profils')
-        .select('nickname, is_admin')
+        .select('nickname, is_admin, id')
         .eq('user_id', userId)
         .single();
 
       if (!error) {
         setUser({
-          id: userId,
+          user_id: userId,
+          id: profile.id,
           email: session.user.email,
           token: session.access_token,
           nickname: profile.nickname,
