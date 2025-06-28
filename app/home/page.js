@@ -7,11 +7,68 @@ import { useRouter } from 'next/navigation';
 import { FaApple, FaFacebookF, FaGoogle, FaTwitter } from 'react-icons/fa';
 import Loader from '../../components/Loader';
 
-export default function Home() {
+export default function HomePage() {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const router = useRouter()
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [articles, setArticles] = useState([])
+  const [podcasts, setPodcasts] = useState([])
+  const [themes, setThemes] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedTheme, setSelectedTheme] = useState(null)
+  const [searchOverlay, setSearchOverlay] = useState(false)
+  const [users, setUsers] = useState([])
 
-  if (loading) return <Loader />;
+  const articlesRef = useRef(null)
+
+  const getThemeName = (id) => {
+    const theme = themes.find((t) => t.id === id)
+    return theme ? theme.name : 'Thème inconnu'
+  }
+
+  const getNickname = (id) => {
+    const userProfile = users.find((u) => u.id === id)
+    return userProfile ? userProfile.nickname : 'Inconnu'
+  }
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [loading, user, router])
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      const { data: articlesData } = await supabase.from('articles').select('*')
+      const { data: podcastData } = await supabase.from('podcasts').select('*')
+      const { data: themeData } = await supabase.from('themes').select('*')
+      const { data: usersData } = await supabase.from('profils').select('id, nickname')
+
+      setArticles(articlesData || [])
+      setPodcasts(podcastData || [])
+      setThemes(themeData || [])
+      setUsers(usersData || [])
+
+      setLoadingProfile(false)
+    }
+
+    if (user) {
+      fetchContent()
+    }
+  }, [user])
+
+  if (loading || loadingProfile) return <Loader />
+
+  const filteredArticles = articles.filter(article =>
+    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (article.content && article.content.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  const themeFilteredArticles = selectedTheme
+    ? filteredArticles.filter((article) => article.theme_id === selectedTheme)
+    : filteredArticles
+
+  const nickname = user?.nickname || 'Utilisateur'
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -92,6 +149,8 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      <NavBar />
     </div>
-  );
+  )
 }

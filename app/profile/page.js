@@ -22,7 +22,6 @@ export default function ProfilePage() {
   const toggleDarkMode = () => {
     setTheme(darkMode ? 'light' : 'dark');
   };
-
   const [notifications, setNotifications] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
