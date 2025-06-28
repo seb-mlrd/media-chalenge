@@ -124,3 +124,24 @@ Ce projet est sous licence [MIT](LICENSE).
 
 - [Next.js](https://nextjs.org) - Framework React
 - [Supabase](https://supabase.io) - Backend as a Service
+
+Notes JD : 
+
+Intégration de l'authentification
+
+J'ai ajouté le contexte d'authentification au formulaire de création d'article
+Le formulaire utilise désormais automatiquement l'ID de l'utilisateur connecté au lieu de demander une saisie manuelle
+Sécurisation de l'accès
+
+J'ai ajouté une redirection vers la page de connexion si l'utilisateur n'est pas connecté
+Le formulaire n'apparaît que si l'utilisateur est connecté
+Un message explicite est affiché pendant le chargement de l'authentification
+Résolution des problèmes de types
+
+J'ai retiré la conversion des UUID en entiers dans le service de création d'article
+J'ai créé un script SQL pour modifier les colonnes created_by et updated_by dans la table articles pour qu'elles acceptent des UUID
+
+Amélioration de l'interface
+
+J'ai supprimé le champ manuel d'ID de profil qui n'est plus nécessaire
+J'ai simplifié le processus de soumission du formulaire
