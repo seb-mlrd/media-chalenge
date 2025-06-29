@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { FaArrowLeft, FaDownload, FaHeart } from 'react-icons/fa'
-import { FiMaximize, FiMinimize } from 'react-icons/fi'
 
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -13,7 +12,7 @@ import 'dayjs/locale/fr'
 dayjs.extend(relativeTime)
 dayjs.locale('fr')
 
-export default function ArticlePage() {
+export default function ArticleVideoPage() {
   const { id } = useParams()
   const router = useRouter()
   const [article, setArticle] = useState(null)
@@ -23,7 +22,6 @@ export default function ArticlePage() {
   const [liked, setLiked] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
-  const [isFullScreen, setIsFullScreen] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -35,7 +33,7 @@ export default function ArticlePage() {
         setLoading(false)
         return
       }
-
+      // Récupérer article
       const { data: articleData, error: articleError } = await supabase
         .from('articles')
         .select(`
@@ -55,25 +53,39 @@ export default function ArticlePage() {
       }
       setArticle(articleData)
 
-      const { data: themeData } = await supabase
+      // Récupérer thème lié
+      const { data: themeData, error: themeError } = await supabase
         .from('themes')
         .select('*')
         .eq('id', articleData.theme_id)
         .single()
+      if (themeError) {
+        console.warn('Erreur récupération thème:', themeError)
+      }
       setTheme(themeData || null)
 
-      const { data: userData } = await supabase
+      // Récupérer auteur
+      const { data: userData, error: userError } = await supabase
         .from('profils')
         .select('id, avatar_url, nickname')
         .eq('id', articleData.created_by)
         .single()
+      if (userError) {
+        console.warn('Erreur récupération auteur:', userError)
+      }
       setUser(userData || null)
 
+      // Générer URL publique de l'avatar
       if (userData?.avatar_url) {
-        const { data: publicUrlData } = supabase.storage
+        const { data: publicUrlData, error: publicUrlError } = supabase.storage
           .from('media')
           .getPublicUrl(userData.avatar_url)
-        setAvatarUrl(publicUrlData.publicUrl)
+        if (publicUrlError) {
+          console.warn('Erreur récupération URL avatar:', publicUrlError)
+          setAvatarUrl(null)
+        } else {
+          setAvatarUrl(publicUrlData.publicUrl)
+        }
       } else {
         setAvatarUrl(null)
       }
@@ -86,6 +98,7 @@ export default function ArticlePage() {
 
   useEffect(() => {
     async function fetchUser() {
+      // Récupérer user actuel via supabase.auth.getUser()
       const { data, error } = await supabase.auth.getUser()
       if (error) {
         console.error('Erreur récupération user:', error)
@@ -111,28 +124,22 @@ export default function ArticlePage() {
         return
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('favorites')
         .select('*')
         .eq('profil_id', currentUser.id)
         .eq('article_id', articleId)
         .single()
 
-      setLiked(!!data)
+      if (!error && data) {
+        setLiked(true)
+      } else {
+        setLiked(false)
+      }
     }
 
     checkFavorite()
   }, [currentUser, id])
-
-  function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setIsFullScreen(true)
-    } else {
-      document.exitFullscreen()
-      setIsFullScreen(false)
-    }
-  }
 
   async function toggleFavorite() {
     if (!currentUser) {
@@ -141,20 +148,35 @@ export default function ArticlePage() {
     }
 
     const articleId = Number(id)
-    if (isNaN(articleId)) return
+    if (isNaN(articleId)) {
+      console.error("ID de l'article invalide")
+      return
+    }
 
     if (liked) {
+      // Supprimer favori
       const { error } = await supabase
         .from('favorites')
         .delete()
         .eq('profil_id', currentUser.id)
         .eq('article_id', articleId)
-      if (!error) setLiked(false)
+
+      if (error) {
+        console.error('Erreur suppression favori:', error.message)
+      } else {
+        setLiked(false)
+      }
     } else {
+      // Ajouter favori
       const { error } = await supabase
         .from('favorites')
         .insert([{ profil_id: currentUser.id, article_id: articleId }])
-      if (!error) setLiked(true)
+
+      if (error) {
+        console.error('Erreur ajout favori:', error.message)
+      } else {
+        setLiked(true)
+      }
     }
   }
 
@@ -180,57 +202,74 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* IMAGE + HEADER */}
-      <div className="relative w-full h-[50vh]">
-        <img
-          src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
-          alt={article.title}
-          className="w-full h-full object-cover rounded-b-3xl"
-        />
+      {/* VIDEO + HEADER */}
+      <div className="relative w-full h-[80vh] rounded-b-3xl overflow-hidden">
+        {(() => {
+          const videoMedia = article.media?.find(m => m.type === 'video')
+          if (videoMedia) {
+            return (
+              <video
+                src={videoMedia.url}
+                controls
+                autoPlay
+                muted
+                loop
+                className="w-full h-full object-cover rounded-b-3xl"
+              />
+            )
+          } else {
+            return (
+              <img
+                src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
+                alt={article.title}
+                className="w-full h-full object-cover rounded-b-3xl"
+              />
+            )
+          }
+        })()}
 
-        {/* Bouton retour */}
         <div
           className="absolute top-4 left-4 bg-white/80 rounded-full p-2 cursor-pointer"
           onClick={() => router.push('/')}
         >
           <FaArrowLeft size={18} />
         </div>
+       
+       
+        <button
+  onClick={async () => {
+    const media =
+      article.media?.find((m) => m.type === 'video')
 
-        {/* Boutons téléchargement + plein écran */}
-        <div className="absolute top-4 right-4 flex space-x-2 bg-white/80 rounded-full p-2">
-          {/* Télécharger */}
-          <button
-            onClick={async () => {
-              const media = article.media?.find((m) => m.type === 'image')
-              if (!media?.url) return alert('Aucun média à télécharger.')
-              try {
-                const response = await fetch(media.url)
-                const blob = await response.blob()
-                const blobUrl = window.URL.createObjectURL(blob)
-                const link = document.createElement('a')
-                link.href = blobUrl
-                link.download = media.url.split('/').pop() || 'media'
-                document.body.appendChild(link)
-                link.click()
-                link.remove()
-                window.URL.revokeObjectURL(blobUrl)
-              } catch (err) {
-                console.error('Erreur téléchargement :', err)
-                alert("Le téléchargement a échoué.")
-              }
-            }}
-            className="p-1"
-          >
-            <FaDownload size={18} />
-          </button>
+    if (!media?.url) {
+      alert('Aucun média à télécharger.')
+      return
+    }
 
-          {/* Plein écran */}
-          <button onClick={toggleFullScreen} className="p-1">
-            {isFullScreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
-          </button>
-        </div>
+    try {
+      const response = await fetch(media.url)
+      const blob = await response.blob()
 
-        {/* Titre & thème */}
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = media.url.split('/').pop() || 'media'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      console.error('Erreur lors du téléchargement :', error)
+      alert("Le téléchargement a échoué.")
+    }
+  }}
+  className="absolute top-4 right-4 bg-white/80 rounded-full p-2"
+>
+  <FaDownload size={18} />
+</button>
+
+
+
         <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-xl space-y-1">
           <div className="text-xs font-medium bg-[#9992FF] text-white px-2 py-1 rounded-md w-fit">
             {theme?.name || 'Thème inconnu'}
@@ -240,7 +279,7 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* AUTEUR */}
+      {/* INFOS AUTEUR */}
       <div className="flex items-center space-x-4 px-4 mt-4">
         <img
           src={avatarUrl || '/default-avatar.png'}
@@ -250,13 +289,16 @@ export default function ArticlePage() {
         <p className="font-medium">{user?.nickname || 'Auteur inconnu'}</p>
       </div>
 
-      {/* CONTENU */}
+      {/* DESCRIPTION */}
       <div className="px-4 mt-6 text-gray-700 dark:text-gray-300 leading-relaxed">
         {article.content}
       </div>
 
-      {/* SÉPARATEUR */}
-      <hr className="my-6 border-t border-gray-300 dark:border-gray-700 mx-auto" style={{ width: '8cm' }} />
+      {/* Ligne horizontale centrée */}
+      <hr
+        className="my-6 border-t border-gray-300 dark:border-gray-700 mx-auto"
+        style={{ width: '8cm' }}
+      />
 
       {/* FAVORI */}
       <div className="px-4 pb-6 flex justify-center">
@@ -264,7 +306,11 @@ export default function ArticlePage() {
           className="bg-[#9992FF] p-3 rounded-full cursor-pointer"
           onClick={toggleFavorite}
         >
-          <FaHeart className={`text-xl transition-colors ${liked ? 'text-red-500' : 'text-white'}`} />
+          <FaHeart
+            className={`text-xl transition-colors ${
+              liked ? 'text-red-500' : 'text-white'
+            }`}
+          />
         </div>
       </div>
     </div>
