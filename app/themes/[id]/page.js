@@ -96,127 +96,128 @@ export default function ThemePage({ params }) {
   ]
 
   return (
-    <div className="min-h-screen bg-white p-4 flex flex-col max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => router.push('/')}
-          className="p-2 rounded hover:bg-gray-200"
-          aria-label="Retour"
-        >
-          <FaArrowLeft size={20} />
-        </button>
+    <div className="min-h-screen bg-white p-4 sm:p-6 md:p-10 flex flex-col max-w-5xl mx-auto">
+  {/* Header */}
+  <div className="flex items-center justify-between mb-4">
+    <button
+      onClick={() => router.push('/')}
+      className="p-2 rounded hover:bg-gray-200"
+      aria-label="Retour"
+    >
+      <FaArrowLeft className="text-lg sm:text-xl" />
+    </button>
 
-        <h1 className="text-xl font-bold">{theme.name}</h1>
+    <h1 className="text-xl sm:text-2xl font-bold">{theme.name}</h1>
 
-        <button className="p-2 rounded hover:bg-gray-200" aria-label="Notifications">
-          <FaRegBell size={20} />
-        </button>
-      </div>
+    <button className="p-2 rounded hover:bg-gray-200" aria-label="Notifications">
+      <FaRegBell className="text-lg sm:text-xl" />
+    </button>
+  </div>
 
-      {/* Barre de recherche */}
-      <div className="flex items-center border border-gray-300 rounded-full px-3 py-2 mb-6 w-full max-w-xl mx-auto">
-        <FaSearch className="text-gray-500 mr-2" />
-        <input
-          type="text"
-          placeholder="Rechercher..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow outline-none text-sm sm:text-base"
-        />
-      </div>
+  {/* Barre de recherche */}
+  <div className="flex items-center border border-gray-300 rounded-full px-3 py-2 mb-6 w-full max-w-xl mx-auto">
+    <FaSearch className="text-gray-500 mr-2" />
+    <input
+      type="text"
+      placeholder="Rechercher..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="flex-grow outline-none text-sm sm:text-base"
+    />
+  </div>
 
-      {/* Filtres */}
-      <div className="flex flex-wrap justify-center gap-6 mb-6">
-        {filters.map(({ key, shortLabel }) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key)}
-            className={`flex items-center justify-center rounded-full font-medium
-              px-8 py-2 text-sm sm:text-base
-              ${
-                filter === key
-                  ? 'bg-[#9992FF] text-white shadow-lg'
-                  : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
-              }`}
-          >
-            {shortLabel}
-          </button>
-        ))}
-      </div>
+  {/* Filtres */}
+  <div className="flex flex-wrap justify-center gap-6 mb-6">
+    {filters.map(({ key, shortLabel }) => (
+      <button
+        key={key}
+        onClick={() => setFilter(key)}
+        className={`flex items-center justify-center rounded-full font-medium
+          px-6 sm:px-8 py-2 text-sm sm:text-base
+          ${
+            filter === key
+              ? 'bg-[#9992FF] text-white shadow-lg'
+              : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+          }`}
+      >
+        {shortLabel}
+      </button>
+    ))}
+  </div>
 
-      {/* Articles */}
-      {(filter === 'all' || filter === 'articles') && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Articles</h2>
-          {filteredArticles.length === 0 ? (
-            <p>Aucun article pour ce thème.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredArticles.map((article) => (
-                <div
-                  key={article.id}
-                  className="bg-gray-100 p-4 rounded shadow flex flex-col justify-between"
-                  style={{ minHeight: '350px' }}
+  {/* Articles */}
+  {(filter === 'all' || filter === 'articles') && (
+    <section className="mb-8">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4">Articles</h2>
+      {filteredArticles.length === 0 ? (
+        <p>Aucun article pour ce thème.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredArticles.map((article) => (
+            <div
+              key={article.id}
+              className="bg-gray-100 p-4 rounded shadow flex flex-col justify-between"
+              style={{ minHeight: '350px' }}
+            >
+              <img
+                src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
+                alt={article.title}
+                className="mb-4 w-full h-48 md:h-64 object-cover rounded"
+              />
+              <div className="flex-grow" />
+              <div className="flex flex-col">
+                <h3 className="font-semibold">{article.title}</h3>
+                <p className="text-xs md:text-sm mt-1 line-clamp-2">{article.content.slice(0,50)}</p>
+                <button
+                  className="mt-4 self-end text-blue-600 hover:underline"
+                  onClick={() => router.push(`/articles/${article.id}`)}
                 >
-                  <img
-                    src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
-                    alt={article.title}
-                    className="mb-4 w-full h-48 object-cover rounded"
-                  />
-                  <div className="flex-grow" />
-                  <div className="flex flex-col">
-                    <h3 className="font-semibold">{article.title}</h3>
-                    <p className="text-sm text-gray-700 mt-2 line-clamp-3">{article.content}</p>
-                    <button
-                      className="mt-4 self-end text-blue-600 hover:underline"
-                      onClick={() => router.push(`/articles/${article.id}`)}
-                    >
-                      Lire
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  Lire
+                </button>
+              </div>
             </div>
-          )}
-        </section>
+          ))}
+        </div>
       )}
+    </section>
+  )}
 
-      {/* Vidéos (affichées comme articles avec vidéos) */}
-      {(filter === 'all' || filter === 'videos') && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Vidéos</h2>
-          {filteredArticlesWithVideos.length === 0 ? (
-            <p>Aucune vidéo pour ce thème.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredArticlesWithVideos.map((article) => {
-                const video = article.media?.find(m => m.type === 'video')
-                return (
-                  <div
-                    key={article.id}
-                    className="bg-gray-100 p-4 rounded shadow flex flex-col justify-between"
-                  >
-                    <video
-                      src={video?.url}
-                      controls
-                      className="rounded mb-4 w-full h-48 object-cover bg-black"
-                    />
-                    <h3 className="font-semibold">{article.title}</h3>
-                    <p className="text-sm text-gray-700 mt-2 line-clamp-3">{article.content}</p>
-                    <button
-                      className="mt-4 self-end text-blue-600 hover:underline"
-                      onClick={() => router.push(`/videos/${article.id}`)}
-                    >
-                      Voir les détails
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </section>
+  {/* Vidéos */}
+  {(filter === 'all' || filter === 'videos') && (
+    <section className="mb-8">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4">Vidéos</h2>
+      {filteredArticlesWithVideos.length === 0 ? (
+        <p>Aucune vidéo pour ce thème.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredArticlesWithVideos.map((article) => {
+            const video = article.media?.find(m => m.type === 'video')
+            return (
+              <div
+                key={article.id}
+                className="bg-gray-100 p-4 rounded shadow flex flex-col justify-between"
+              >
+                <video
+                  src={video?.url}
+                  controls
+                  className="rounded mb-4 w-full h-48 md:h-64 object-cover bg-black"
+                />
+                <h3 className="font-semibold">{article.title}</h3>
+                <p className="text-xs md:text-sm mt-1 line-clamp-2">{article.content.slice(0,50)}</p>
+                <button
+                  className="mt-4 self-end text-blue-600 hover:underline"
+                  onClick={() => router.push(`/videos/${article.id}`)}
+                >
+                  Voir les détails
+                </button>
+              </div>
+            )
+          })}
+        </div>
       )}
-    </div>
+    </section>
+  )}
+</div>
+
   )
 }
