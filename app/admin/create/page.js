@@ -6,7 +6,7 @@ import styles from './create.module.css';
 import { useAuth } from '@/context/AuthContext';
 import createArticle from '@/app/articles/CreateArticle';
 import { getThemes } from '@/app/themes/ThemeService';
-import { uploadMedia } from '@/app/media/MediaService';
+import { saveMediaMetadata, uploadMedia } from '@/app/media/MediaService';
 import Image from 'next/image';
 
 export default function ArticleForm() {
@@ -188,6 +188,18 @@ export default function ArticleForm() {
       }, 
       mediaFiles
     );
+
+    if (result.success && result.article?.id) {
+      const articleId = result.article.id;
+
+    // 2. Enregistrer les métadonnées dans la table media
+      for (const file of mediaFiles) {
+        const saveResult = await saveMediaMetadata(articleId, file);
+        if (!saveResult.success) {
+          console.error("Erreur enregistrement média:", saveResult.message);
+        }
+      }
+    }
     
     setLoading(false);
     

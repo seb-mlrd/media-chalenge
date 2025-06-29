@@ -174,29 +174,53 @@ export default function Admin() {
                 </div>
 
                 {/* Articles Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {allArticles.map((article) => (
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {allArticles.map((article) => {
+                        const imageMedia = article.media?.find(m => m.type === 'image');
+                        return (
                         <div key={article.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                            
+                            {imageMedia ? (
+                            <img
+                                src={imageMedia.url}
+                                alt="Image de l'article"
+                                className="h-32 w-full object-cover rounded mb-4"
+                            />
+                            ) : (
                             <div className="h-32 bg-gray-200 rounded mb-4" />
-                            <p className="text-indigo-600 text-sm font-medium mb-1">{article.articles_created_by_fkey?.nickname ?? 'Auteur inconnu'} • {new Date(article.created_at).toLocaleString("fr-FR", {
+                            )}
+                            
+                            <p className="text-indigo-600 text-sm font-medium mb-1">
+                            {article.articles_created_by_fkey?.nickname ?? 'Auteur inconnu'} •{" "}
+                            {new Date(article.created_at).toLocaleString("fr-FR", {
                                 day: "2-digit",
                                 month: "long",
                                 year: "numeric",
                                 hour: "2-digit",
-                                minute: "2-digit"
-                            })}</p>
-                            <h3 className="text-lg font-semibold mb-1 text-gray-700">{article.title}</h3>
-                            <p className="text-gray-500 text-sm mb-3">
-                                {article.content.length > 200 ? article.content.slice(0, 200) + "..." : article.content}
+                                minute: "2-digit",
+                            })}
                             </p>
+                            
+                            <h3 className="text-lg font-semibold mb-1 text-gray-700">{article.title}</h3>
+                            
+                            <p className="text-gray-500 text-sm mb-3">
+                            {article.content.length > 200 ? article.content.slice(0, 200) + "..." : article.content}
+                            </p>
+                            
                             <div className="flex justify-between items-center">
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">{article.themes?.name}</span>
-                                <button className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700" onClick={() => router.push(`admin/edit/${article.id}`)}>
-                                    Voir
-                                </button>
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">
+                                {article.themes?.name}
+                            </span>
+                            <button
+                                className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+                                onClick={() => router.push(`admin/edit/${article.id}`)}
+                            >
+                                Voir
+                            </button>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </main>
         </div>
