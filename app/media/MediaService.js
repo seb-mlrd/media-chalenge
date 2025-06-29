@@ -89,7 +89,6 @@ export async function saveMediaMetadata(articleId, mediaData) {
         type: mediaData.type,
         url: mediaData.url,
         mime_type: mediaData.mime_type,
-        file_path: mediaData.file_path
       }])
       .select();
 

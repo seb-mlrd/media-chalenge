@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { FaRegBell, FaSearch, FaPlayCircle, FaTimes } from 'react-icons/fa';
 import { FiArrowRight } from 'react-icons/fi';
-
 import Loader from '../components/Loader';
 import NavBar from '../components/NavBar';
 import { useAuth } from '@/context/AuthContext';
@@ -29,10 +28,8 @@ export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const articlesRef = useRef(null);
-
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [articles, setArticles] = useState([]);
-  const [podcasts, setPodcasts] = useState([]);
   const [themes, setThemes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTheme, setSelectedTheme] = useState(null);
@@ -58,9 +55,16 @@ export default function Home() {
       async function fetchData() {
         try {
           const { data: articlesData, error: articlesError } = await supabase
-            .from('articles')
-            .select('*')
-            .order('created_at', { ascending: false });
+  .from('articles')
+  .select(`
+    *,
+    media:media!media_article_id_fkey(
+      url,
+      type
+    )
+  `)
+  .order('created_at', { ascending: false });
+
           if (articlesError) {
             console.error('Erreur articles:', articlesError);
             throw articlesError;
@@ -73,15 +77,6 @@ export default function Home() {
             throw themesError;
           }
           setThemes(themesData || []);
-
-          const { data: podcastsData, error: podcastsError } = await supabase.from('podcasts').select('*');
-          if (podcastsError) {
-          console.error('Erreur podcasts:', JSON.stringify(podcastsError, null, 2));
-          throw podcastsError;
-        }
-
-          setPodcasts(podcastsData || []);
-
           setLoadingProfile(false);
         } catch (error) {
           console.error('Erreur lors du chargement des données:', error.message || error);
@@ -139,7 +134,7 @@ export default function Home() {
                   className="flex items-center w-full bg-gray-100 p-4 rounded-lg shadow"
                 >
                   <img
-                    src={article.image_url || '/default-image.jpg'}
+                      src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
                     alt={article.title}
                     className="w-24 h-16 object-cover rounded-md flex-shrink-0"
                   />
@@ -206,6 +201,59 @@ export default function Home() {
             ))}
       </div>
 
+      {/* VIDEOS */} 
+<h3 className="font-medium text-base md:text-lg mt-8 mb-4">Vidéos à découvrir</h3>
+<div className="relative w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+     style={{
+       paddingLeft: 'max(1rem, calc(50vw - 150px))',
+       paddingRight: 'max(1rem, calc(50vw - 150px))',
+       scrollPaddingLeft: 'max(1rem, calc(50vw - 150px))',
+       scrollPaddingRight: 'max(1rem, calc(50vw - 150px))',
+     }}>
+  <div className="flex space-x-4">
+    {themeFilteredArticles.map((article) => {
+      const videoMedia = article.media?.find((m) => m.type === 'video');
+      if (!videoMedia) return null;
+
+      return (
+        <div
+  key={`video-${article.id}`}
+  className="snap-center flex-shrink-0 w-[80vw] max-w-[300px] p-4 rounded-xl shadow-lg flex flex-col justify-between bg-white"
+  style={{ minHeight: '380px' }} 
+>
+  <div className="relative w-full h-64 rounded-md overflow-hidden"> {/* ← hauteur vidéo augmentée */}
+    <video
+      controls
+      className="w-full h-full object-cover rounded-md"
+      src={videoMedia.url}
+    />
+    <span
+      className="absolute top-2 left-2 text-xs font-medium text-white px-2 py-1 rounded-full"
+      style={{ backgroundColor: '#9992FF' }}
+    >
+      {getThemeName(article.theme_id)}
+    </span>
+  </div>
+
+  <div className="mt-2"> 
+    <h4 className="font-semibold text-sm md:text-base">{article.title}</h4>
+
+    <button
+    className="mt-5 w-full bg-[#5C19F5] text-white hover:bg-[#4a14c4] rounded-full py-2 text-sm font-medium transition"
+      onClick={() => router.push(`/videos/${article.id}`)}
+    >
+      Voir plus détails
+    </button>
+  </div>
+</div>
+
+
+      );
+    })}
+  </div>
+</div>
+
+
       {/* ARTICLES */}
       <h3 className="font-medium text-base md:text-lg mb-4">À lire sans scroller des heures</h3>
       <div
@@ -225,7 +273,8 @@ export default function Home() {
               className="snap-center flex-shrink-0 w-[80vw] max-w-[300px] p-4 rounded-xl shadow-lg flex flex-col justify-between bg-cover bg-center"
               style={{
                 minHeight: '350px',
-                backgroundImage: `url(${article.image_url || '/default-image.jpg'})`,
+                backgroundImage: `url(${article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'})`,
+
               }}
             >
               <div className="flex-grow" />
@@ -234,7 +283,11 @@ export default function Home() {
                   className="text-xs font-medium text-white px-2 py-2 rounded-tl-lg rounded-tr-lg w-fit"
                   style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), #9992FF)' }}
                 >
-                  {getThemeName(article.theme_id)}
+                  <span
+                    className="bg-[#9992FF] rounded-full px-2 py-1"
+                  >
+                    {getThemeName(article.theme_id)}
+                  </span>
                 </span>
                 <div
                   className="p-4 inline-block max-w-full flex flex-col text-white rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
@@ -255,23 +308,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* PODCASTS */}
-      <h3 className="font-medium text-base md:text-lg">À écouter entre deux réunions</h3>
-      <div className="space-y-3 mb-16">
-        {podcasts.map((podcast) => (
-          <div
-            key={podcast.id}
-            className="flex justify-between items-center bg-gray-100 p-3 rounded-lg"
-          >
-            <div>
-              <p className="font-semibold text-sm md:text-base">{podcast.title}</p>
-              <span className="text-xs text-gray-500">{podcast.duration} min</span>
-            </div>
-            <FaPlayCircle className="text-xl text-black" />
-          </div>
-        ))}
       </div>
     </div>
   );
