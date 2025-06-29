@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { FaSave } from "react-icons/fa";
+import { FaSave, FaArrowLeft } from "react-icons/fa";
+import styles from '../../create/create.module.css';
 import { fetchThemesService } from "@/services/articlesService";
 import { uploadMedia, saveMediaMetadata, deleteMedia } from "@/app/media/MediaService";
 
@@ -147,6 +148,13 @@ export default function EditArticle() {
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-8 bg-white shadow-md rounded-lg">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className={styles.backButton}
+      >
+        <FaArrowLeft className={styles.icon} />
+      </button>
       <h1 className="text-2xl font-bold mb-6 text-gray-700">Modifier l’article</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

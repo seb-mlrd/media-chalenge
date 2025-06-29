@@ -8,6 +8,7 @@ import createArticle from '@/app/articles/CreateArticle';
 import { getThemes } from '@/app/themes/ThemeService';
 import { saveMediaMetadata, uploadMedia } from '@/app/media/MediaService';
 import Image from 'next/image';
+import { FaArrowLeft } from 'react-icons/fa';
 
 export default function ArticleForm() {
   const { user, loading: authLoading } = useAuth();
@@ -223,6 +224,13 @@ export default function ArticleForm() {
 
   return (
     <div className={styles['container-center']}>
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className={styles.backButton}
+      >
+        <FaArrowLeft className={styles.icon} />
+      </button>
       {authLoading ? (
         <div className={styles.loader}>Chargement de l'authentification...</div>
       ) : !user ? (

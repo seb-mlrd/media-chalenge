@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { Switch } from '@headlessui/react';
 import { FiLogOut, FiMoon, FiBell, FiBookmark, FiUser, FiTrash2} from 'react-icons/fi';
+import { MdDashboard } from 'react-icons/md';
 import { FaRegHeart } from 'react-icons/fa'
 
 import { useTheme } from 'next-themes';
@@ -145,6 +146,18 @@ export default function ProfilePage() {
           <span className="text-gray-400">{'>'}</span>
         </div>
       </div>
+
+      {user.is_admin &&
+        <div className="bg-gray-50 dark:bg-gray-800 py-4 px-6 border-b border-gray-200 dark:border-gray-700 max-w-[600px] mx-auto">
+          <div onClick={() => router.push('admin')}  className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+              <MdDashboard size={20} />
+              <span>Dashboard</span>
+            </div>
+            <span className="text-gray-400">{'>'}</span>
+          </div>
+        </div>
+      }
 
       {/* Préférences */}
       <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto">

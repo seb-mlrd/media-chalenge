@@ -3,7 +3,7 @@
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit, FaUserEdit, FaLayerGroup} from 'react-icons/fa'; 
+import { FaEdit, FaUserEdit, FaLayerGroup, FaBars} from 'react-icons/fa'; 
 import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService } from "@/services/articlesService";
 
 export default function Admin() {
@@ -12,6 +12,7 @@ export default function Admin() {
     const [allArticles, setAllArticles] = useState([]);
     const [themes, setThemes] = useState([]);
     const [selectedTheme, setSelectedTheme] = useState('');
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     
     const fetchArticles = async () => {
         let { data: articles, error } = await fetchArticlesService()
@@ -44,7 +45,11 @@ export default function Admin() {
     }, []);
 
     if (loading || !user) {
-        return <p className="text-center text-gray-600 mt-8">Chargement...</p>;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-center text-gray-600">Chargement...</p>
+            </div>
+        );
     }
     
     const fetchArticlesLastDay = async () => {
@@ -107,9 +112,17 @@ export default function Admin() {
     };
 
     return (
-        <div className="min-h-screen flex bg-gray-50">
+        <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden p-4 flex justify-between items-center bg-white border-b">
+                <div className="text-xl font-semibold text-gray-700">Dashboard</div>
+                <button onClick={() => setShowMobileMenu(!showMobileMenu)} className="text-gray-700">
+                    <FaBars size={24} />
+                </button>
+            </div>
+
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r px-6 py-8 hidden md:block">
+            <aside className={`md:w-64 bg-white border-r px-6 py-8 ${showMobileMenu ? 'block' : 'hidden'} md:block`}>
                 <div className="text-xl font-semibold text-gray-700 mb-10">Dashboard</div>
                 <nav className="space-y-4 text-gray-700">
                     <a href="/admin" className="block hover:text-indigo-600 bg-gray-100 p-2">Dashboard</a>
@@ -119,9 +132,9 @@ export default function Admin() {
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 p-8">
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
                         <h1 className="text-2xl text-gray-700 font-bold">Bienvenue, {user.nickname}</h1>
                         <p className="text-gray-500 text-sm">Voici un aperçu du trafic de votre site et des utilisateurs actifs.</p>
@@ -136,8 +149,8 @@ export default function Admin() {
                 </div>
 
                 {/* Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left align-center hover:shadow inline" onClick={() => router.push('admin/create')}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow" onClick={() => router.push('admin/create')}>
                         <FaEdit className="inline w-10"/>
                         Créer un article
                     </button>
@@ -145,20 +158,19 @@ export default function Admin() {
                         <FaLayerGroup className="inline w-10"/>
                         Voir tous les articles
                     </button>
-                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow inline" onClick={() => router.push('admin/user')}>
+                    <button className="bg-white text-gray-500 border rounded-lg p-4 text-left hover:shadow" onClick={() => router.push('admin/user')}>
                         <FaUserEdit className="inline w-10" />
                         Gérer les utilisateurs
                     </button>
                 </div>
 
                 {/* Filtres */}
-                <div className="mb-4 flex gap-2">
+                <div className="mb-4 flex flex-wrap gap-2">
                     <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticles()}>Tout</button>
                     <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastYears()}>12 mois</button>
                     <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastThirtyDays()}>30 jours</button>
                     <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastSevenDays()}>7 jours</button>
                     <button className="px-3 py-1 text-sm border text-gray-500 rounded-md bg-white hover:bg-gray-100" onClick={() => fetchArticlesLastDay()}>24 heures</button>
-
                     <select
                         className="border rounded-md p-2 bg-white text-gray-500 text-sm w-auto"
                         value={selectedTheme}
@@ -174,7 +186,7 @@ export default function Admin() {
                 </div>
 
                 {/* Articles Grid */}
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {allArticles.map((article) => {
                         const imageMedia = article.media?.find(m => m.type === 'image');
                         return (
