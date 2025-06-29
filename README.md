@@ -31,8 +31,12 @@ cd media-chalenge
 npm install
 # ou
 yarn install
-```
 
+#Installer dayjs avec relativeTime (si ce n’est pas encore fait)
+
+npm install dayjs
+
+```
 3. Configurez les variables d'environnement :
 
 Créez un fichier `.env.local` à la racine du projet avec les variables suivantes :
