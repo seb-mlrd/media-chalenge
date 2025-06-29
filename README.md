@@ -119,6 +119,8 @@ Pour ajouter de nouvelles fonctionnalités ou corriger des bugs, vous pouvez :
   npm install -D @tailwindcss/postcss
 - Ajouter headlessui
   npm install @headlessui/react
+- Ajouter dayjs
+  npm install dayjs
 
 ## Licence
 
