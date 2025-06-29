@@ -13,6 +13,7 @@ import { FaRegHeart } from 'react-icons/fa'
 import { useTheme } from 'next-themes';
 import NavBar from '../../components/NavBar';
 import Loader from '../../components/Loader'; 
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -170,13 +171,14 @@ export default function ProfilePage() {
             <FiMoon />
             <span>Dark mode</span>
           </div>
-          <Switch
+          <ThemeSwitcher />
+          {/* <Switch
             checked={darkMode}
             onChange={toggleDarkMode}
             className={`${darkMode ? 'bg-black' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full`}
           >
             <span className={`${darkMode ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`} />
-          </Switch>
+          </Switch> */}
         </div>
 
         {/* Notifications */}

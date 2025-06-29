@@ -14,7 +14,7 @@ export default function ThemeSwitcher() {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem' }}>
-      <span style={{ fontSize: '1.2rem' }}>🌙</span>
+      <span style={{ fontSize: '1.2rem' }}>☀️</span>
       <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 24 }}>
         <input
           type="checkbox"
@@ -52,7 +52,7 @@ export default function ThemeSwitcher() {
           />
         </span>
       </label>
-      <span style={{ fontSize: '1.2rem' }}>☀️</span>
+      <span style={{ fontSize: '1.2rem' }}>🌙</span>
     </div>
   );
 }
