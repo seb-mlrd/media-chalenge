@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService } from "@/services/articlesService";
+import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService, deleteArticleService } from "@/services/articlesService";
 import { FaBars } from "react-icons/fa";
 
 export default function AllArticles() {
@@ -107,6 +107,16 @@ export default function AllArticles() {
         }
     };
 
+    const handleDelete = async (id) => {
+        const result = await deleteArticleService(id);
+        if (result.success) {
+            alert("✅ Article supprimé !");
+            fetchArticles();
+        } else {
+            alert("❌ Erreur : " + result.message);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
             {/* Mobile Menu Toggle */}
@@ -188,13 +198,22 @@ export default function AllArticles() {
                                     {article.content.length > 200 ? article.content.slice(0, 200) + "..." : article.content}
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">{article.themes?.name}</span>
-                                    <button
-                                        className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                                        onClick={() => router.push(`edit/${article.id}`)}
-                                    >
-                                        Voir
-                                    </button>
+                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">{article.themes?.name}
+                                    </span>
+                                    <div>
+                                        <button
+                                            className="text-sm bg-red-600 text-white px-3 py-1 mx-1 rounded hover:bg-red-700"
+                                            onClick={() => handleDelete(article.id)}
+                                        >
+                                            Supprimer
+                                        </button>
+                                        <button
+                                            className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+                                            onClick={() => router.push(`edit/${article.id}`)}
+                                        >
+                                            Voir
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );

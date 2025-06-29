@@ -25,3 +25,16 @@ export async function fetchThemesService() {
         .from('themes')
         .select('id, name')
 }
+
+export async function deleteArticleService(articleId) {
+    const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', articleId);
+
+    if (error) {
+        return { success: false, message: error.message };
+    }
+
+    return { success: true };
+}
