@@ -25,8 +25,11 @@ export default function EditProfilePage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const patternEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  const patternPassword = /(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-])/;
+  // Regex plus simple pour email, pour ne pas bloquer trop vite
+  const patternEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Mot de passe: majuscule, minuscule, chiffre, caractère spécial, 8-20 caractères
+  const patternPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#?!@$%^&*-]).{8,20}$/;
 
   useEffect(() => {
     async function fetchUserProfile() {
@@ -37,10 +40,21 @@ export default function EditProfilePage() {
 
       setEmail(user.email);
 
+      // Récupérer l'UUID utilisateur depuis Supabase auth
+      const { data: authUser, error: authError } = await supabase.auth.getUser();
+      const userId = authUser?.user?.id;
+
+      if (!userId) {
+        setMessage('❌ Impossible de récupérer l’UUID de l’utilisateur');
+        setLoading(false);
+        return;
+      }
+
+      // Récupération du profil
       const { data, error } = await supabase
         .from('profils')
         .select('nickname, avatar_url')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (error) {
@@ -68,8 +82,8 @@ export default function EditProfilePage() {
 
   const checkEmailValid = (email) => patternEmail.test(email);
   const checkPasswordValid = (password) => {
-    if (!password) return true;
-    return patternPassword.test(password) && password.length >= 8 && password.length <= 20;
+    if (!password) return true; // pas de changement = ok
+    return patternPassword.test(password);
   };
   const checkNicknameValid = (nickname) => nickname.trim() !== '';
 
@@ -85,20 +99,6 @@ export default function EditProfilePage() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setMessage('');
-
-    if (!checkEmailValid(email)) {
-      setMessage('❌ Email invalide');
-      return;
-    }
-    if (!checkPasswordValid(password)) {
-      setMessage('❌ Mot de passe invalide : majuscule, minuscule, chiffre, caractère spécial, 8-20 caractères');
-      return;
-    }
-    if (!checkNicknameValid(nickname)) {
-      setMessage('❌ Le pseudo ne doit pas être vide');
-      return;
-    }
-
     setUploading(true);
 
     if (!user) {
@@ -108,38 +108,60 @@ export default function EditProfilePage() {
       return;
     }
 
+    // Récupérer l'UUID utilisateur depuis Supabase auth
+    const { data: authUser, error: authError } = await supabase.auth.getUser();
+    const userId = authUser?.user?.id;
+
+    if (!userId) {
+      setMessage('❌ Impossible de récupérer l’UUID utilisateur');
+      setUploading(false);
+      return;
+    }
+
+    // Validation indépendante
+    if (email !== user.email && !checkEmailValid(email)) {
+      setMessage('❌ Email invalide');
+      setUploading(false);
+      return;
+    }
+
+    if (password && !checkPasswordValid(password)) {
+      setMessage('❌ Mot de passe invalide : majuscule, minuscule, chiffre, caractère spécial, 8-20 caractères');
+      setUploading(false);
+      return;
+    }
+
+    if (!checkNicknameValid(nickname)) {
+      setMessage('❌ Le pseudo ne doit pas être vide');
+      setUploading(false);
+      return;
+    }
+
+    // Upload avatar si changé
     if (newAvatarFile) {
       try {
         const fileExt = newAvatarFile.name.split('.').pop();
-        const filePath = `avatars/${user.id}.${fileExt}`;
+        const filePath = `avatars/${userId}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('media')
           .upload(filePath, newAvatarFile, { upsert: true });
 
-        if (uploadError) {
-          setMessage('❌ Erreur upload : ' + uploadError.message);
-          setUploading(false);
-          return;
-        }
+        if (uploadError) throw uploadError;
 
         const { error: updateAvatarError } = await supabase
           .from('profils')
           .update({ avatar_url: filePath })
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
 
-        if (updateAvatarError) {
-          setMessage('❌ Erreur mise à jour avatar : ' + updateAvatarError.message);
-          setUploading(false);
-          return;
-        }
+        if (updateAvatarError) throw updateAvatarError;
 
         const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
         setAvatarUrl(urlData.publicUrl);
         setPreviewAvatarUrl(null);
         setNewAvatarFile(null);
       } catch (error) {
-        setMessage('❌ Erreur upload : ' + error.message);
+        setMessage('❌ Erreur upload avatar : ' + error.message);
         setUploading(false);
         return;
       }
@@ -148,21 +170,29 @@ export default function EditProfilePage() {
     let updateMessage = '';
     let emailUpdated = false;
 
+    // Mise à jour email si modifié
     if (email !== user.email) {
-      const { error } = await supabase.auth.updateUser({ email });
-      if (error) {
-        setMessage('❌ Erreur mise à jour email : ' + error.message);
-        setUploading(false);
-        return;
-      } else {
+  const { error } = await supabase.auth.updateUser({ email });
+  if (error) {
+    if (error.message.includes('already been registered')) {
+      setMessage('❌ Cette adresse e-mail est déjà utilisée par un autre compte.');
+    } else {
+      setMessage('❌ Erreur mise à jour email : ' + error.message);
+    }
+    setUploading(false);
+    return;
+  }
+ 
+      else {
         emailUpdated = true;
         updateMessage += `📧 2 e-mails envoyés :
 • Ancienne adresse → confirmation du changement
 • Nouvelle adresse → validation et accès à l’app
-👉 Cliquez sur les deux pour finaliser.`;
+👉 Cliquez sur les deux pour finaliser.\n`;
       }
     }
 
+    // Mise à jour mot de passe si renseigné
     if (password) {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
@@ -172,10 +202,11 @@ export default function EditProfilePage() {
       }
     }
 
+    // Mise à jour pseudo toujours (car c’est un champ modifiable)
     const { error: profileError } = await supabase
       .from('profils')
       .update({ nickname })
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (profileError) {
       setMessage('❌ Erreur mise à jour pseudo : ' + profileError.message);
@@ -224,7 +255,6 @@ export default function EditProfilePage() {
             ) : (
               <FiUser className="text-gray-600 w-full h-full" />
             )}
-            
           </div>
 
           <button
@@ -307,3 +337,4 @@ export default function EditProfilePage() {
     </div>
   );
 }
+

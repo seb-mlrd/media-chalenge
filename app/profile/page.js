@@ -1,9 +1,9 @@
 'use client';
 
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LogoutButton from '../../components/LogoutButton';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Switch } from '@headlessui/react';
 import { FiLogOut, FiMoon, FiBell, FiBookmark, FiUser, FiTrash2} from 'react-icons/fi';
@@ -34,24 +34,36 @@ export default function ProfilePage() {
   }, [loading, user, router]);
 
   // Charger l'avatar de l'utilisateur
-  useEffect(() => {
-    if (!user) return;
+ useEffect(() => {
+  const loadAvatar = async () => {
+    const { data: authUser, error: authError } = await supabase.auth.getUser();
+    const userId = authUser?.user?.id;
 
-    const loadAvatar = async () => {
-      const { data: profile, error } = await supabase
-        .from('profils')
-        .select('avatar_url')
-        .eq('user_id', user.id)
-        .single();
+    if (!userId) {
+      console.error("Impossible de récupérer l'UUID de l'utilisateur.");
+      return;
+    }
 
-      if (!error && profile?.avatar_url) {
-        const { data } = supabase.storage.from('media').getPublicUrl(profile.avatar_url);
-        setAvatarUrl(data.publicUrl);
-      }
-    };
+    const { data: profile, error } = await supabase
+      .from('profils')
+      .select('avatar_url')
+      .eq('user_id', userId)
+      .single();
 
-    loadAvatar();
-  }, [user]);
+    if (error) {
+      console.error("Erreur lors de la récupération du profil :", error.message);
+      return;
+    }
+
+    if (profile?.avatar_url) {
+      const { data } = supabase.storage.from('media').getPublicUrl(profile.avatar_url);
+      setAvatarUrl(data.publicUrl);
+    }
+  };
+
+  loadAvatar();
+}, []);
+
 
   async function handleDeleteAccount() {
     const confirmed = window.confirm('⚠️ Supprimer définitivement votre compte ?');
@@ -86,17 +98,16 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="w-full min-h-screen mt-0 text-sm font-medium bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <div className="min-h-screen mt-0 text-sm font-medium bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 md:px-8 lg:px-16">
       {/* Header */}
-      <div className="text-white text-center p-6 rounded-t-xl" style={{
-        background: 'linear-gradient(135deg, #F7AD38 0%, #AD44AF 30%,#9992FF 80%, #9992FF 100%)',
-        height: '50vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}>
+      <div
+        className="text-white text-center p-6 rounded-t-xl h-[40vh] md:h-[50vh] flex flex-col justify-center items-center"
+        style={{
+          background: 'linear-gradient(135deg, #F7AD38 0%, #AD44AF 30%,#9992FF 80%, #9992FF 100%)',
+        }}
+      >
         {/* Avatar */}
-        <div className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden bg-gray-300 relative">
+        <div className="mx-auto mb-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-gray-300 relative">
           {avatarUrl ? (
             <img src={avatarUrl} alt="Avatar" className="object-cover w-full h-full" />
           ) : (
@@ -104,39 +115,28 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <p className="text-lg font-semibold mb-2" style={{ color: '#5C19F5' }}>
+        <p className="text-base md:text-lg font-semibold mb-2" style={{ color: '#5C19F5' }}>
           {user.nickname || 'Pseudo'}
         </p>
 
-        <p className="text-sm mb-20" style={{ color: 'black' }}>
+        <p className="text-xs md:text-sm mb-20" style={{ color: 'black' }}>
           {user.email}
         </p>
 
         <button
           onClick={() => router.push('/profile/edit')}
-          style={{
-            width: '200px',
-            padding: '8px 0',
-            borderRadius: 9999,
-            fontSize: 14,
-            background: '#5C19F5',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'block',
-            margin: '0 auto',
-          }}
+          className="w-full max-w-[200px] px-4 py-2 rounded-full text-sm md:text-base bg-[#5C19F5] text-white mx-auto block"
         >
           Modifier
         </button>
       </div>
 
       {/* Collections */}
-      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4">
+      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto">
         Collection
       </p>
 
-      <div className="bg-gray-50 dark:bg-gray-800 py-4 px-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-50 dark:bg-gray-800 py-4 px-6 border-b border-gray-200 dark:border-gray-700 max-w-[600px] mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
             <FaRegHeart />
@@ -147,10 +147,10 @@ export default function ProfilePage() {
       </div>
 
       {/* Préférences */}
-      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4">
+      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto">
         Préférences
       </p>
-      <div className="bg-white dark:bg-gray-800 px-6 py-4 space-y-4">
+      <div className="bg-white dark:bg-gray-800 px-6 py-4 space-y-4 max-w-[600px] mx-auto">
         {/* Dark Mode */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
@@ -183,7 +183,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Logout */}
-      <div className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 max-w-[600px] mx-auto">
         <div className="text-red-500 flex items-center gap-2 cursor-pointer">
           <FiLogOut />
           <LogoutButton />
@@ -191,21 +191,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Delete Account */}
-                <div className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <div
-              onClick={handleDeleteAccount}
-              className={`text-red-500 flex items-center gap-2 cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              <FiTrash2 />
-              <span className="font-medium">Supprimer mon compte</span>
-            </div>
-          </div>
+      <div className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 max-w-[600px] mx-auto">
+        <div
+          onClick={handleDeleteAccount}
+          className={`text-red-500 flex items-center gap-2 cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+        >
+          <FiTrash2 />
+          <span className="font-medium">Supprimer mon compte</span>
+        </div>
+      </div>
 
       <NavBar />
     </div>
   );
 }
-
-
-
-

@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { FaRegBell, FaSearch, FaPlayCircle, FaTimes } from 'react-icons/fa'
-import { FiArrowRight } from 'react-icons/fi'
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { FaRegBell, FaSearch, FaPlayCircle, FaTimes } from 'react-icons/fa';
+import { FiArrowRight } from 'react-icons/fi';
 
-import Loader from '../components/Loader'
-import NavBar from '../components/NavBar'
-import { useAuth } from '@/context/AuthContext'
+import Loader from '../components/Loader';
+import NavBar from '../components/NavBar';
+import { useAuth } from '@/context/AuthContext';
 
 function highlightText(text, highlight) {
-  if (!highlight) return text
-  const regex = new RegExp(`(${highlight})`, 'gi')
-  const parts = text.split(regex)
+  if (!highlight) return text;
+  const regex = new RegExp(`(${highlight})`, 'gi');
+  const parts = text.split(regex);
   return parts.map((part, i) =>
     regex.test(part) ? (
       <span key={i} className="text-blue-600 font-semibold">
@@ -22,25 +22,82 @@ function highlightText(text, highlight) {
     ) : (
       part
     )
-  )
+  );
 }
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const router = useRouter()
-  const [loadingProfile, setLoadingProfile] = useState(true)
-  const [articles, setArticles] = useState([])
-  const [podcasts, setPodcasts] = useState([])
-  const [themes, setThemes] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTheme, setSelectedTheme] = useState(null)
-  const [searchOverlay, setSearchOverlay] = useState(false)
-  const [users, setUsers] = useState([])
+  const router = useRouter();
+  const articlesRef = useRef(null);
 
-  if (loading) return <Loader />;
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [articles, setArticles] = useState([]);
+  const [podcasts, setPodcasts] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState(null);
+  const [searchOverlay, setSearchOverlay] = useState(false);
+
+  const nickname = user?.nickname || 'Utilisateur';
+
+  function getThemeName(themeId) {
+    const theme = themes.find(t => t.id === themeId);
+    return theme ? theme.name : 'Inconnu';
+  }
+
+  const themeFilteredArticles = articles.filter(article => {
+    const matchesTheme = selectedTheme ? article.theme_id === selectedTheme : true;
+    const matchesSearch =
+      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (article.content && article.content.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesTheme && matchesSearch;
+  });
+
+  useEffect(() => {
+    if (!loading) {
+      async function fetchData() {
+        try {
+          const { data: articlesData, error: articlesError } = await supabase
+            .from('articles')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (articlesError) {
+            console.error('Erreur articles:', articlesError);
+            throw articlesError;
+          }
+          setArticles(articlesData || []);
+
+          const { data: themesData, error: themesError } = await supabase.from('themes').select('*');
+          if (themesError) {
+            console.error('Erreur themes:', themesError);
+            throw themesError;
+          }
+          setThemes(themesData || []);
+
+          const { data: podcastsData, error: podcastsError } = await supabase.from('podcasts').select('*');
+          if (podcastsError) {
+          console.error('Erreur podcasts:', JSON.stringify(podcastsError, null, 2));
+          throw podcastsError;
+        }
+
+          setPodcasts(podcastsData || []);
+
+          setLoadingProfile(false);
+        } catch (error) {
+          console.error('Erreur lors du chargement des données:', error.message || error);
+          setLoadingProfile(false);
+        }
+      }
+      fetchData();
+    }
+  }, [loading]);
+
+  if (loading || loadingProfile) return <Loader />;
 
   return (
-    <div className="p-4 md:p-6 space-y-6 relative">
+<div className="px-4 sm:px-6 md:px-10 lg:px-16 py-4 space-y-6 relative max-w-screen-xl mx-auto">
+          <NavBar />
+
       {/* TOP BAR */}
       <div className="flex justify-between items-center">
         <img src="/logo.png" alt="Logo" className="h-16 md:h-20 w-auto" />
@@ -68,8 +125,8 @@ export default function Home() {
             <FaTimes
               className="ml-3 text-xl text-gray-600 cursor-pointer"
               onClick={() => {
-                setSearchTerm('')
-                setSearchOverlay(false)
+                setSearchTerm('');
+                setSearchOverlay(false);
               }}
             />
           </div>
@@ -94,8 +151,10 @@ export default function Home() {
                       {highlightText(article.content || '', searchTerm)}
                     </p>
                   </div>
-                  <button className="ml-4 text-blue-600 hover:text-blue-800 font-bold text-2xl"
-                    onClick={() => router.push(`/articles/${article.id}`)}>
+                  <button
+                    className="ml-4 text-blue-600 hover:text-blue-800 font-bold text-2xl"
+                    onClick={() => router.push(`/articles/${article.id}`)}
+                  >
                     <FiArrowRight />
                   </button>
                 </div>

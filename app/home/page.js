@@ -1,5 +1,7 @@
 'use client';
 
+import { supabase } from '@/lib/supabase'
+import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import LogoutButton from "../../components/LogoutButton";
 import EditButton from "../../components/EditButton";
@@ -149,8 +151,6 @@ export default function HomePage() {
           )}
         </div>
       </div>
-
-      <NavBar />
     </div>
   )
 }
