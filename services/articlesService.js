@@ -25,3 +25,29 @@ export async function fetchThemesService() {
         .from('themes')
         .select('id, name')
 }
+
+export async function deleteArticleService(articleId) {
+    const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', articleId);
+
+    if (error) {
+        return { success: false, message: error.message };
+    }
+
+    return { success: true };
+}
+
+export async function addArticleFavoriteService(articleId, userId) {
+    return await supabase
+      .from('favorites')
+      .insert({ profil_id: userId, article_id: articleId });
+}
+
+export async function deleteArticleFavoriteService(articleId, userId) {
+    return await supabase
+      .from('favorites')
+      .delete()
+      .match({ profil_id: userId, article_id: articleId });
+}

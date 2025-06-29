@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaEdit, FaUserEdit, FaLayerGroup, FaBars} from 'react-icons/fa'; 
-import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService } from "@/services/articlesService";
+import { fetchArticlesService, fetchArticlesSinceService, fetchArticlesByThemeService, fetchThemesService, deleteArticleService } from "@/services/articlesService";
 
 export default function Admin() {
     const { user, loading } = useAuth();
@@ -108,6 +108,16 @@ export default function Admin() {
             }
         }else{
             await fetchArticles();
+        }
+    };
+
+    const handleDelete = async (id) => {
+        const result = await deleteArticleService(id);
+        if (result.success) {
+            alert("✅ Article supprimé !");
+            fetchArticles();
+        } else {
+            alert("❌ Erreur : " + result.message);
         }
     };
 
@@ -223,12 +233,20 @@ export default function Admin() {
                             <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500">
                                 {article.themes?.name}
                             </span>
-                            <button
-                                className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                                onClick={() => router.push(`admin/edit/${article.id}`)}
-                            >
-                                Voir
-                            </button>
+                            <div>
+                                <button
+                                    className="text-sm bg-red-600 text-white px-3 py-1 mx-1 rounded hover:bg-red-700"
+                                    onClick={() => handleDelete(article.id)}
+                                >
+                                    Supprimer
+                                </button>
+                                <button
+                                    className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+                                    onClick={() => router.push(`admin/edit/${article.id}`)}
+                                >
+                                    Voir
+                                </button>
+                            </div>
                             </div>
                         </div>
                         );
