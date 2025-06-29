@@ -90,7 +90,7 @@ export default function Home() {
   if (loading || loadingProfile) return <Loader />;
 
   return (
-<div className="px-4 sm:px-6 md:px-10 lg:px-16 py-4 space-y-6 relative max-w-screen-xl mx-auto">
+<div className="container mx-auto px-4 sm:px-6 md:px-10 py-4 space-y-6">
           <NavBar />
 
       {/* TOP BAR */}
@@ -107,7 +107,9 @@ export default function Home() {
 
       {/* SEARCH OVERLAY */}
       {searchOverlay && (
-        <div className="fixed top-0 left-0 w-full h-full bg-white z-50 p-6 overflow-y-auto">
+<div className="fixed inset-0 bg-white z-50 p-6 overflow-y-auto">
+
+      {/* <div className="fixed top-0 left-0 w-full h-full bg-white z-50 p-6 overflow-y-auto max-h-screen"> */}
           <div className="flex items-center mb-6">
             <FaSearch className="text-gray-500 mr-2" />
             <input
@@ -125,8 +127,10 @@ export default function Home() {
               }}
             />
           </div>
-
+        {/* Résultats filtrés */}
           <div className="space-y-4">
+          {/* ARTICLES */}
+            <h3 className="text-lg font-semibold mb-3">Articles</h3>
             {themeFilteredArticles.length > 0 ? (
               themeFilteredArticles.map((article) => (
                 <div
@@ -158,7 +162,47 @@ export default function Home() {
               <p className="text-gray-500 text-center">Aucun article trouvé.</p>
             )}
           </div>
-        </div>
+           {/* VIDÉOS */}
+      <div>
+        <h3 className="text-lg font-semibold mb-3">Vidéos</h3>
+        {themeFilteredArticles.filter((a) => a.media?.some(m => m.type === 'video')).length > 0 ? (
+          themeFilteredArticles
+            .filter((a) => a.media?.some(m => m.type === 'video'))
+            .map((article) => {
+              const video = article.media?.find((m) => m.type === 'video');
+              return (
+                <div
+                  key={article.id}
+                  className="flex items-center w-full bg-gray-100 p-4 rounded-lg shadow"
+                >
+                  <video
+                    src={video?.url}
+                    className="w-24 h-16 aspect-video object-cover rounded-md flex-shrink-0"
+                    muted
+                    playsInline
+                  />
+                  <div className="flex flex-col ml-4 flex-grow">
+                    <h4 className="font-semibold text-base">
+                      {highlightText(article.title, searchTerm)}
+                    </h4>
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                      {highlightText(article.content || '', searchTerm)}
+                    </p>
+                  </div>
+                  <button
+                    className="ml-4 text-blue-600 hover:text-blue-800 font-bold text-2xl"
+                    onClick={() => router.push(`/videos/${article.id}`)}
+                  >
+                    <FiArrowRight />
+                  </button>
+                </div>
+              );
+            })
+        ) : (
+          <p className="text-gray-500">Aucune vidéo trouvée.</p>
+        )}
+      </div>
+    </div>
       )}
 
       {/* THEMES */}
@@ -201,114 +245,111 @@ export default function Home() {
             ))}
       </div>
 
-      {/* VIDEOS */} 
-<h3 className="font-medium text-base md:text-lg mt-8 mb-4">Vidéos à découvrir</h3>
-<div className="relative w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
-     style={{
-       paddingLeft: 'max(1rem, calc(50vw - 150px))',
-       paddingRight: 'max(1rem, calc(50vw - 150px))',
-       scrollPaddingLeft: 'max(1rem, calc(50vw - 150px))',
-       scrollPaddingRight: 'max(1rem, calc(50vw - 150px))',
-     }}>
-  <div className="flex space-x-4">
+      <h3 className="font-medium text-base md:text-lg mt-8 mb-4">Vidéos à découvrir</h3>
+
+<div className="overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4">
+  <div className="flex space-x-4 justify-center w-fit mx-auto px-4">
     {themeFilteredArticles.map((article) => {
       const videoMedia = article.media?.find((m) => m.type === 'video');
       if (!videoMedia) return null;
 
       return (
         <div
-  key={`video-${article.id}`}
-  className="snap-center flex-shrink-0 w-[80vw] max-w-[300px] p-4 rounded-xl shadow-lg flex flex-col justify-between bg-white"
-  style={{ minHeight: '380px' }} 
->
-  <div className="relative w-full h-64 rounded-md overflow-hidden"> {/* ← hauteur vidéo augmentée */}
-    <video
-      controls
-      className="w-full h-full object-cover rounded-md"
-      src={videoMedia.url}
-    />
-    <span
-      className="absolute top-2 left-2 text-xs font-medium text-white px-2 py-1 rounded-full"
-      style={{ backgroundColor: '#9992FF' }}
-    >
-      {getThemeName(article.theme_id)}
-    </span>
-  </div>
+          key={`video-${article.id}`}
+          className="snap-center flex-shrink-0 bg-white rounded-xl shadow-lg flex flex-col justify-between p-4"
+          style={{
+            width: 'min(90vw, 320px)',
+            minHeight: '380px',
+          }}
+        >
+          <div className="relative w-full h-64 rounded-md overflow-hidden">
+            <video
+              controls
+              className="w-full h-full object-cover rounded-md"
+              src={videoMedia.url}
+            />
+            <span
+              className="absolute top-2 left-2 text-xs font-medium text-white px-2 py-1 rounded-full"
+              style={{ backgroundColor: '#9992FF' }}
+            >
+              {getThemeName(article.theme_id)}
+            </span>
+          </div>
 
-  <div className="mt-2"> 
-    <h4 className="font-semibold text-sm md:text-base">{article.title}</h4>
+          <div className="mt-2">
+            <h4 className="font-semibold text-sm md:text-base">{article.title}</h4>
+            <p className="text-xs md:text-sm mt-1 line-clamp-2">{article.content.slice(0,50)}</p>
 
-    <button
-    className="mt-5 w-full bg-[#5C19F5] text-white hover:bg-[#4a14c4] rounded-full py-2 text-sm font-medium transition"
-      onClick={() => router.push(`/videos/${article.id}`)}
-    >
-      Voir plus détails
-    </button>
-  </div>
-</div>
-
-
+            <button
+              className="mt-5 w-full bg-[#5C19F5] text-white hover:bg-[#4a14c4] rounded-full py-2 text-sm font-medium transition"
+              onClick={() => router.push(`/videos/${article.id}`)}
+            >
+              Voir plus détails
+            </button>
+          </div>
+        </div>
       );
     })}
   </div>
 </div>
 
 
-      {/* ARTICLES */}
-      <h3 className="font-medium text-base md:text-lg mb-4">À lire sans scroller des heures</h3>
+{/* ARTICLES */}
+<h3 className="font-medium text-base md:text-lg mb-4">À lire sans scroller des heures</h3>
+<div
+  ref={articlesRef}
+  className="overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-20"
+  style={{ paddingBottom: '5cm' }}
+>
+
+
+  <div className="flex space-x-4 justify-center w-fit mx-auto px-4">
+    {themeFilteredArticles.map((article) => (
       <div
-        ref={articlesRef}
-        className="relative w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+        key={article.id}
+        className="snap-center flex-shrink-0 w-[90vw] sm:w-[70vw] md:w-[300px] p-4 rounded-xl shadow-lg flex flex-col justify-between bg-cover bg-center"
         style={{
-          paddingLeft: 'max(1rem, calc(50vw - 150px))',
-          paddingRight: 'max(1rem, calc(50vw - 150px))',
-          scrollPaddingLeft: 'max(1rem, calc(50vw - 150px))',
-          scrollPaddingRight: 'max(1rem, calc(50vw - 150px))',
+          minHeight: '350px',
+          backgroundImage: `url(${article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'})`,
         }}
       >
-        <div className="flex space-x-4">
-          {themeFilteredArticles.map((article) => (
-            <div
-              key={article.id}
-              className="snap-center flex-shrink-0 w-[80vw] max-w-[300px] p-4 rounded-xl shadow-lg flex flex-col justify-between bg-cover bg-center"
-              style={{
-                minHeight: '350px',
-                backgroundImage: `url(${article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'})`,
-
-              }}
+        <div className="flex-grow" />
+        <div className="flex flex-col">
+          <span
+            className="text-xs font-medium text-white px-2 py-2 rounded-tl-lg rounded-tr-lg w-fit"
+            style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), #9992FF)' }}
+          >
+            <span className="bg-[#9992FF] rounded-full px-2 py-1">
+              {getThemeName(article.theme_id)}
+            </span>
+          </span>
+          <div
+            className="p-4 inline-block max-w-full flex flex-col text-white rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
+            style={{
+              background: 'linear-gradient(135deg, #9992FF 0%, #F7AD38 100%)',
+            }}
+          >
+            <h4 className="font-semibold text-sm md:text-base">{article.title}</h4>
+            <p className="text-xs md:text-sm mt-1 line-clamp-2">{article.content.slice(0,50)}</p>
+            <button
+              className="mt-4 self-end text-white hover:underline text-sm"
+              onClick={() => router.push(`/articles/${article.id}`)}
             >
-              <div className="flex-grow" />
-              <div className="flex flex-col">
-                <span
-                  className="text-xs font-medium text-white px-2 py-2 rounded-tl-lg rounded-tr-lg w-fit"
-                  style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), #9992FF)' }}
-                >
-                  <span
-                    className="bg-[#9992FF] rounded-full px-2 py-1"
-                  >
-                    {getThemeName(article.theme_id)}
-                  </span>
-                </span>
-                <div
-                  className="p-4 inline-block max-w-full flex flex-col text-white rounded-tr-2xl rounded-bl-2xl rounded-br-2xl"
-                  style={{
-                    background: 'linear-gradient(135deg, #9992FF 0%, #F7AD38 100%)',
-                  }}
-                >
-                  <h4 className="font-semibold text-sm md:text-base">{article.title}</h4>
-                  <p className="text-xs md:text-sm mt-1 line-clamp-2">{article.content}</p>
-                  <button
-                    className="mt-4 self-end text-white hover:underline text-sm"
-                    onClick={() => router.push(`/articles/${article.id}`)}
-                  >
-                    Lire
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+              Lire
+            </button>
+          </div>
         </div>
       </div>
+    ))}
+    
+  </div>
+</div>
+
+
+
+
+
+
     </div>
   );
 }

@@ -213,6 +213,7 @@ export default function ProfilePage() {
           <span className="font-medium">Supprimer mon compte</span>
         </div>
       </div>
+<div style={{ height: '2cm' }} />
 
       <NavBar />
     </div>
