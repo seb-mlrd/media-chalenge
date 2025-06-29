@@ -194,7 +194,7 @@ export default function AllArticles() {
                             </span>
                             <button
                                 className="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                                onClick={() => router.push(`admin/edit/${article.id}`)}
+                                onClick={() => router.push(`edit/${article.id}`)}
                             >
                                 Voir
                             </button>
