@@ -9,6 +9,8 @@ import { FiMaximize, FiMinimize } from 'react-icons/fi'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/fr'
+import { addArticleFavoriteService, deleteArticleFavoriteService } from '@/services/articlesService'
+import { useAuth } from '@/context/AuthContext'
 
 dayjs.extend(relativeTime)
 dayjs.locale('fr')
@@ -16,23 +18,39 @@ dayjs.locale('fr')
 export default function ArticlePage() {
   const { id } = useParams()
   const router = useRouter()
+  const { user, loading } = useAuth();
   const [article, setArticle] = useState(null)
   const [theme, setTheme] = useState(null)
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [liked, setLiked] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
+
+  const fetchFavorites = async () => {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('article_id')
+      .eq('profil_id', user.id);
+
+    if (!error && data) {
+      setFavorites(data.map(f => f.article_id));
+    }
+  };
+
+  const isFavorited = (articleId) => favorites.includes(articleId);
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
-
       const articleId = Number(id)
       if (isNaN(articleId)) {
         console.error('ID article invalide')
-        setLoading(false)
         return
       }
 
@@ -50,7 +68,6 @@ export default function ArticlePage() {
 
       if (articleError || !articleData) {
         console.error('Erreur récupération article:', articleError)
-        setLoading(false)
         return
       }
       setArticle(articleData)
@@ -67,7 +84,6 @@ export default function ArticlePage() {
         .select('id, avatar_url, nickname')
         .eq('id', articleData.created_by)
         .single()
-      setUser(userData || null)
 
       if (userData?.avatar_url) {
         const { data: publicUrlData } = supabase.storage
@@ -77,26 +93,14 @@ export default function ArticlePage() {
       } else {
         setAvatarUrl(null)
       }
-
-      setLoading(false)
     }
 
     fetchData()
   }, [id])
 
   useEffect(() => {
-    async function fetchUser() {
-      const { data, error } = await supabase.auth.getUser()
-      if (error) {
-        console.error('Erreur récupération user:', error)
-        setCurrentUser(null)
-      } else {
-        setCurrentUser(data.user)
-      }
-    }
-
-    fetchUser()
-  }, [])
+    setCurrentUser(user);
+  }, [user]);
 
   useEffect(() => {
     async function checkFavorite() {
@@ -134,29 +138,22 @@ export default function ArticlePage() {
     }
   }
 
-  async function toggleFavorite() {
-    if (!currentUser) {
-      alert('Vous devez être connecté pour ajouter un favori.')
-      return
-    }
-
-    const articleId = Number(id)
-    if (isNaN(articleId)) return
-
-    if (liked) {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('profil_id', currentUser.id)
-        .eq('article_id', articleId)
-      if (!error) setLiked(false)
+  const toggleFavorite = async () => {
+    const articleId = Number(id);
+    if (isFavorited(articleId)) {
+      const { error } = await deleteArticleFavoriteService(articleId, user.id)
+      setLiked(false)
+      if (!error) {
+        setFavorites(favorites.filter(id => id !== articleId));
+      }
     } else {
-      const { error } = await supabase
-        .from('favorites')
-        .insert([{ profil_id: currentUser.id, article_id: articleId }])
-      if (!error) setLiked(true)
+      const { error } = await addArticleFavoriteService(articleId, user.id)
+      setLiked(true)
+      if (!error) {
+        setFavorites([...favorites, articleId]);
+      }
     }
-  }
+  };
 
   if (loading)
     return (
@@ -180,7 +177,6 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* IMAGE + HEADER */}
       <div className="relative w-full h-[50vh]">
         <img
           src={article.media?.find(m => m.type === 'image')?.url || '/default-image.jpg'}
@@ -188,7 +184,6 @@ export default function ArticlePage() {
           className="w-full h-full object-cover rounded-b-3xl"
         />
 
-        {/* Bouton retour */}
         <div
           className="absolute top-4 left-4 bg-white/80 rounded-full p-2 cursor-pointer"
           onClick={() => router.push('/')}
@@ -196,9 +191,7 @@ export default function ArticlePage() {
           <FaArrowLeft size={18} />
         </div>
 
-        {/* Boutons téléchargement + plein écran */}
         <div className="absolute top-4 right-4 flex space-x-2 bg-white/80 rounded-full p-2">
-          {/* Télécharger */}
           <button
             onClick={async () => {
               const media = article.media?.find((m) => m.type === 'image')
@@ -224,13 +217,11 @@ export default function ArticlePage() {
             <FaDownload size={18} />
           </button>
 
-          {/* Plein écran */}
           <button onClick={toggleFullScreen} className="p-1">
             {isFullScreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
           </button>
         </div>
 
-        {/* Titre & thème */}
         <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-xl space-y-1">
           <div className="text-xs font-medium bg-[#9992FF] text-white px-2 py-1 rounded-md w-fit">
             {theme?.name || 'Thème inconnu'}
@@ -240,25 +231,21 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* AUTEUR */}
       <div className="flex items-center space-x-4 px-4 mt-4">
         <img
           src={avatarUrl || '/default-avatar.png'}
-          alt={user?.nickname || 'Auteur inconnu'}
+          alt={article?.articles_created_by_fkey?.nickname || 'Auteur inconnu'}
           className="w-10 h-10 rounded-full object-cover"
         />
-        <p className="font-medium">{user?.nickname || 'Auteur inconnu'}</p>
+        <p className="font-medium">{article?.articles_created_by_fkey?.nickname || 'Auteur inconnu'}</p>
       </div>
 
-      {/* CONTENU */}
       <div className="px-4 mt-6 text-gray-700 dark:text-gray-300 leading-relaxed">
         {article.content}
       </div>
 
-      {/* SÉPARATEUR */}
       <hr className="my-6 border-t border-gray-300 dark:border-gray-700 mx-auto" style={{ width: '8cm' }} />
 
-      {/* FAVORI */}
       <div className="px-4 pb-6 flex justify-center">
         <div
           className="bg-[#9992FF] p-3 rounded-full cursor-pointer"

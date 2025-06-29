@@ -13,7 +13,7 @@ export default function AllArticles() {
     const [themes, setThemes] = useState([]);
     const [selectedTheme, setSelectedTheme] = useState('');
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-
+    
 
     const fetchThemes = async () => {
         const { data, error } = await fetchThemesService();
