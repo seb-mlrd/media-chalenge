@@ -10,6 +10,7 @@ import { FiLogOut, FiMoon, FiBell, FiBookmark, FiUser, FiTrash2} from 'react-ico
 import { MdDashboard } from 'react-icons/md';
 import { FaRegHeart } from 'react-icons/fa'
 
+
 import { useTheme } from 'next-themes';
 import NavBar from '../../components/NavBar';
 import Loader from '../../components/Loader'; 
@@ -100,7 +101,7 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen mt-0 text-sm font-medium bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 md:px-8 lg:px-16">
+    <div className="min-h-screen mt-0 text-sm font-medium dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 md:px-8 lg:px-16">
       {/* Header */}
       <div
         className="text-white text-center p-6 rounded-t-xl h-[40vh] md:h-[50vh] flex flex-col justify-center items-center"
@@ -134,10 +135,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Collections */}
-      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto">
-        Collection
+      <p className={`font-bold uppercase text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto ${ theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+        Collection 
       </p>
-
       <div className="bg-gray-50 dark:bg-gray-800 py-4 px-6 border-b border-gray-200 dark:border-gray-700 max-w-[600px] mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
@@ -161,7 +161,7 @@ export default function ProfilePage() {
       }
 
       {/* Préférences */}
-      <p className="font-bold uppercase text-gray-900 text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto">
+      <p className={`font-bold uppercase text-xl tracking-wider px-6 pt-6 pb-4 max-w-[600px] mx-auto ${ theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
         Préférences
       </p>
       <div className="bg-white dark:bg-gray-800 px-6 py-4 space-y-4 max-w-[600px] mx-auto">

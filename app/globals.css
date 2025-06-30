@@ -6,11 +6,13 @@
 :root {
   --background: white;
   --foreground: black;
+  --text-color: black;
 }
 
 [data-theme='dark'] {
   --background: #2A2C35;
   --foreground: white;
+  --text-color: white;
 }
 
 html,

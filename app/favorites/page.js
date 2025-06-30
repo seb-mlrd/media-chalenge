@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import NavBar from '@/components/NavBar'
 
 export default function FavoritesPage() {
   const { user } = useAuth()
@@ -83,7 +84,7 @@ export default function FavoritesPage() {
           }
           </div>
           <div className="p-4 space-y-2">
-            <h2 className="text-sm font-semibold line-clamp-2">{article.title}</h2>
+            <h2 className="text-sm text-black font-semibold line-clamp-2">{article.title}</h2>
             <button
               onClick={() => router.push(
                 article._viewType === 'video'
@@ -97,6 +98,7 @@ export default function FavoritesPage() {
           </div>
         </div>
       ))}
+      <NavBar />
     </div>
   )
 }
