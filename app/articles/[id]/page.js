@@ -61,7 +61,8 @@ export default function ArticlePage() {
             media:media!media_article_id_fkey(
               url,
               type
-            )
+            ),
+            articles_created_by_fkey(nickname)
           `)
         .eq('id', articleId)
         .single()
