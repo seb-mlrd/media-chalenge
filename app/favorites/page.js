@@ -49,7 +49,10 @@ export default function FavoritesPage() {
   }, [user])
 
   if (loading) return <div className="p-4 text-center">Chargement...</div>
-  if (favorites.length === 0) return <div className="p-4 text-center">Aucun favori trouvé</div>
+  if (favorites.length === 0) return <div className="p-4 text-center">
+    Aucun favori trouvé
+    <NavBar />
+  </div>
 
   return (
     <div className="p-4 space-y-6">
